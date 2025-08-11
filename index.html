@@ -108,6 +108,24 @@
   </div>
 
 <script>
+  <script>
+// ===== API CONFIG (EDIT HERE) =====
+const API_BASE_DEFAULT = 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
+
+// URL priority: ?api=...  -> localStorage -> default
+const API_BASE = (
+  new URLSearchParams(location.search).get('api') ||
+  localStorage.getItem('apiBase') ||
+  API_BASE_DEFAULT
+).replace(/\/+$/,''); // trailing slash हटाने के लिए
+
+// चाहें तो lock कर दें ताकि आगे से हमेशा यही रहे:
+localStorage.setItem('apiBase', API_BASE);
+
+// helper: किसी भी रूट का पूरा URL बनाता है
+const api = (p='') => `${API_BASE}${p.startsWith('/') ? p : '/' + p}`;
+</script>
+
 (function(){
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
