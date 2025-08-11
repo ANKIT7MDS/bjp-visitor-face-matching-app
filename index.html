@@ -1,410 +1,375 @@
+
 <!doctype html>
 <html lang="hi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Face Search — Simple UI</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Face Search — Upload Ready</title>
 <style>
   :root{
-    --brand:#ff7a00;
-    --text:#222;
-    --muted:#666;
-    --ok:#1f8f4e;
-    --bad:#b00020;
-    --chip:#f4f6f8;
+    --brand:#ff8a00;
+    --brand-dark:#e57700;
+    --ink:#222;
+    --muted:#6b7280;
+    --bg:#faf7f2;
     --card:#fff;
-    --bg:#fafafa;
-    --shadow:0 6px 20px rgba(0,0,0,.08);
-    --radius:14px;
+    --ok:#0a7f33;
+    --bad:#b91c1c;
+    --chip:#111827;
   }
   *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-  }
-  header{
-    position:sticky;top:0;z-index:5;
-    background:#fff;border-bottom:1px solid #eee;padding:.7rem 1rem;
-  }
-  header h1{margin:0;font-size:18px}
-  .wrap{max-width:1200px;margin:0 auto;padding:12px}
-  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-  @media (max-width: 900px){
-    .grid{grid-template-columns:1fr}
-  }
-
-  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-  .card .pad{padding:16px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media (max-width: 640px){ .row{grid-template-columns:1fr} }
-
-  label.small{font-size:13px;color:var(--muted);margin-bottom:6px;display:block}
-  input[type=text],input[type=tel]{
-    width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:10px;outline:none;
-  }
-  input[type=text]:focus,input[type=tel]:focus{border-color:#bbb}
-
-  .help{font-size:13px;color:var(--muted)}
-  .note{margin-top:10px;padding:10px 12px;background:#fff3f3;border:1px dashed #e2b3b3;border-radius:10px;color:#7a2323}
-
-  .videoBox{position:relative;background:#000;border-radius:12px;overflow:hidden;min-height:260px}
-  video{width:100%;height:auto;background:#000;display:block}
-  canvas{display:none}
-
-  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-  button{
-    border:none;outline:none;border-radius:999px;padding:12px 18px;cursor:pointer;font-weight:600;
-  }
-  .btn{background:var(--brand);color:#fff}
-  .btn.alt{background:#111}
-  .btn.ghost{background:#f2f2f2;color:#111}
-  .btn:disabled{opacity:.6;cursor:not-allowed}
-
-  /* right pane */
-  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 8px}
-  .chip{background:var(--chip);border-radius:999px;padding:4px 10px;font-size:13px;color:#333}
-  .thumbs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  @media (min-width:700px){ .thumbs{grid-template-columns:repeat(3,minmax(0,1fr))} }
-  @media (min-width:1000px){ .thumbs{grid-template-columns:repeat(4,minmax(0,1fr))} }
-
-  .thumb{position:relative;background:#f7f7f7;border-radius:12px;overflow:hidden;min-height:140px}
-  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  .thumb .meta{
-    position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;
-    font-size:12px;padding:4px 6px;border-radius:8px
-  }
-  /* select/tick */
-  .thumb input[type=checkbox]{display:none}
-  .tick{
-    position:absolute;left:8px;top:8px;width:22px;height:22px;border-radius:6px;
-    background:rgba(255,255,255,.85);display:grid;place-items:center;font-size:14px;border:1px solid #ddd
-  }
-  .thumb.selected .tick{background:#1a73e8;color:#fff;border-color:#1a73e8}
-  /* download arrow */
-  .dl{
-    position:absolute;right:8px;bottom:8px;width:30px;height:30px;border-radius:50%;
-    background:rgba(17,17,17,.65);color:#fff;display:grid;place-items:center;font-size:16px
-  }
-  .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
-  .count{font-size:13px;color:var(--muted)}
-  .link{color:#1a73e8;text-decoration:none}
-
-  /* hide file input on mobile */
-  @media (max-width: 640px){
-    .fileRow{display:none}
-  }
-
-  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
-    background:#111;color:#fff;border-radius:999px;padding:10px 16px;font-size:14px;opacity:0;pointer-events:none;transition:.25s}
-  .toast.show{opacity:1}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:1080px;margin-inline:auto;padding:16px}
+  h1{font-weight:700;font-size:20px;margin:6px 0 14px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:860px){.row{grid-template-columns:1fr}}
+  .card{background:var(--card);border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.06);padding:14px}
+  label{display:block;font-size:13px;color:var(--muted);margin:8px 0 6px}
+  input[type=text]{width:100%;padding:12px 14px;border:1px solid #e5e7eb;border-radius:8px;font-size:16px;background:#fff}
+  .btn{display:inline-flex;justify-content:center;align-items:center;gap:8px;background:var(--brand);color:#fff;border:0;border-radius:10px;padding:14px 18px;font-weight:700;cursor:pointer;transition:.15s}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn:hover{background:var(--brand-dark)}
+  .btn.ghost{background:#111827;color:#fff}
+  .hint{font-size:13px;color:#374151}
+  .status{margin-top:10px;border:1px dashed #fca5a5;background:#fef2f2;color:#7f1d1d;border-radius:10px;padding:12px 14px}
+  .status.ok{background:#ecfdf5;border-color:#86efac;color:#065f46}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  @media (min-width:720px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media (min-width:1024px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  .photo{position:relative;background:#f3f4f6;border-radius:10px;overflow:hidden;min-height:160px}
+  .photo img{width:100%;height:200px;object-fit:cover;display:block;background:#e5e7eb}
+  .chip{position:absolute;left:8px;top:8px;background:rgba(17,24,39,.85);color:#fff;border-radius:999px;padding:4px 8px;font-size:12px}
+  .dl{position:absolute;right:8px;bottom:8px;background:#111827aa;color:#fff;border-radius:8px;padding:6px 8px;text-decoration:none;font-size:18px}
+  .sel{position:absolute;inset:0;border:3px solid transparent;cursor:pointer}
+  .sel.selected{border-color:var(--brand)}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:#111827;color:#fff;border-radius:999px;padding:6px 10px;font-size:12px}
+  .hide-mobile{}
+  @media (pointer:coarse){ .hide-mobile{display:none !important} }
+  .video-box{position:relative;background:#000;border-radius:12px;overflow:hidden;max-height:420px}
+  video,canvas{width:100%;height:auto;display:block}
+  .video-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .note{font-size:12px;color:#6b7280;margin-top:8px}
+  .sr{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
 </style>
 </head>
 <body>
-<header><h1>फेस सर्च</h1></header>
+  <div class="wrap">
+    <h1>भारतीय जनता पार्टी — मंदसौर (Face Search)</h1>
 
-<div class="wrap">
-  <div class="grid">
-    <!-- LEFT: camera + form -->
-    <div class="card">
-      <div class="pad">
-        <div class="row">
+    <div class="row">
+      <section class="card">
+        <div class="row" style="grid-template-columns:1fr 1fr">
           <div>
-            <label class="small">नाम (वैकल्पिक)</label>
-            <input id="nameInp" type="text" placeholder="आपका नाम (optional)">
+            <label>नाम (अनिवार्य)</label>
+            <input id="name" type="text" placeholder="अपना नाम"/>
           </div>
           <div>
-            <label class="small">मोबाइल नंबर (अनिवार्य)</label>
-            <input id="phoneInp" type="tel" placeholder="10 अंक" inputmode="numeric" maxlength="10">
+            <label>मोबाइल नंबर (अनिवार्य)</label>
+            <input id="mobile" inputmode="numeric" pattern="[0-9]*" maxlength="10" placeholder="10 अंकों का मोबाइल"/>
           </div>
         </div>
 
-        <div class="videoBox" style="margin-top:12px">
-          <video id="cam" playsinline autoplay muted></video>
-          <canvas id="cap"></canvas>
+        <label class="hide-mobile" style="margin-top:12px">या फ़ाइल चुनें</label>
+        <div id="fileInputWrap" class="hide-mobile">
+          <input id="file" type="file" accept="image/*"/>
         </div>
 
-        <div class="actions">
-          <button class="btn ghost" id="snapBtn">सेल्फी लें</button>
-          <button class="btn" id="searchBtn">Search</button>
-          <button class="btn alt" id="restartBtn">दोबारा लें</button>
+        <div class="video-box" style="margin-top:12px">
+          <video id="video" playsinline autoplay muted></video>
+          <canvas id="snap" class="sr"></canvas>
+        </div>
+        <div class="video-actions">
+          <button id="btnStart" class="btn">कैमरा चालू करें</button>
+          <button id="btnShot" class="btn ghost">सेल्फ़ी लें</button>
+          <button id="btnRetry" class="btn ghost">दोबारा लें</button>
+          <div id="camState" class="pill">कैमरा: <b id="camLabel">OFF</b></div>
+          <div id="shotState" class="pill">सेल्फ़ी: <b id="shotLabel">❌</b></div>
         </div>
 
-        <div class="fileRow" style="margin-top:12px">
-          <label class="small">या फ़ाइल चुनें</label>
-          <input id="fileInp" type="file" accept="image/*">
-        </div>
+        <button id="btnSearch" class="btn" style="margin-top:14px;width:100%">Search</button>
 
-        <div class="note" id="hintBox">PNG/WebP → JPEG auto. * मोबाइल पर कैमरा अपने-आप खुलेगा (Allow दें)। फ़ाइल अपलोड की ज़रूरत नहीं।</div>
-        <div class="note" id="errBox" style="display:none"></div>
-      </div>
-    </div>
+        <div id="status" class="status" style="display:none"></div>
+        <p class="note">PNG/WebP → JPEG auto. * मोबाइल पर कैमरा अपने‑आप खुलेगा (Allow दें) । फ़ाइल अपलोड की ज़रूरत नहीं।</p>
+      </section>
 
-    <!-- RIGHT: results -->
-    <div class="card">
-      <div class="pad">
-        <div class="bar">
-          <div class="chips" id="chips">
-            <span class="chip" id="foundChip">मिले 0</span>
-            <span class="chip" id="timeChip">—</span>
-          </div>
-          <div class="actions" style="margin:0">
-            <button class="btn ghost" id="selAllBtn">Select All</button>
-            <button class="btn" id="bulkBtn" disabled>Download Selected</button>
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="pill">मिले <b id="found">0</b> फोटो।</div>
+          <div class="toolbar">
+            <button id="btnSelAll" class="btn ghost" title="Select All">Select All</button>
+            <button id="btnClear" class="btn ghost" title="Clear">Clear</button>
+            <button id="btnBulk" class="btn" title="Download Selected">Download Selected</button>
           </div>
         </div>
-
-        <div class="thumbs" id="thumbs"></div>
-        <div class="help" style="margin-top:10px">मोबाइल पर फोटो पर टैप करके सिलेक्ट करें। नीचे दाएँ कोने के तीर से सिंगल फोटो डाउनलोड करें।</div>
-      </div>
+        <div id="grid" class="grid" style="margin-top:12px"></div>
+      </section>
     </div>
   </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-/* ---------- CONFIG ---------- */
-const q = new URLSearchParams(location.search);
-const API_BASE = q.get('api') || 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
-const EVENT_ID = q.get('event') || q.get('e') || 'demo-2025-01';
-const SIM = +(q.get('sim') || 70);
-const MAX = +(q.get('max') || 10);
-const MOCK = q.has('mock'); // ?mock=1 => UI test without backend
+(function(){
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+  const qs = k => new URLSearchParams(location.search).get(k);
+  const apiBase = qs('api');
+  const eventId = qs('event') || 'demo-2025-01';
+  const demo = qs('demo') === '1' || !apiBase || location.protocol === 'file:';
+  const newTab = qs('newtab') === '1';
 
-/* ---------- ELEMENTS ---------- */
-const video = document.getElementById('cam');
-const canvas = document.getElementById('cap');
-const nameInp = document.getElementById('nameInp');
-const phoneInp = document.getElementById('phoneInp');
-const fileInp = document.getElementById('fileInp');
-const snapBtn = document.getElementById('snapBtn');
-const restartBtn = document.getElementById('restartBtn');
-const searchBtn = document.getElementById('searchBtn');
-const thumbs = document.getElementById('thumbs');
-const foundChip = document.getElementById('foundChip');
-const timeChip = document.getElementById('timeChip');
-const errBox = document.getElementById('errBox');
-const toast = document.getElementById('toast');
-const selAllBtn = document.getElementById('selAllBtn');
-const bulkBtn = document.getElementById('bulkBtn');
+  const el = {
+    name: $('#name'),
+    mobile: $('#mobile'),
+    file: $('#file'),
+    video: $('#video'),
+    snap: $('#snap'),
+    btnStart: $('#btnStart'),
+    btnShot: $('#btnShot'),
+    btnRetry: $('#btnRetry'),
+    btnSearch: $('#btnSearch'),
+    status: $('#status'),
+    camLabel: $('#camLabel'),
+    shotLabel: $('#shotLabel'),
+    grid: $('#grid'),
+    found: $('#found'),
+    btnSelAll: $('#btnSelAll'),
+    btnClear: $('#btnClear'),
+    btnBulk: $('#btnBulk'),
+  };
 
-let stream=null, selfieBlob=null, lastResults=[], selected=new Set();
+  let stream = null;
+  let lastShotDataUrl = null;
+  let items = [];
+  const selected = new Set();
 
-/* ---------- HELPERS ---------- */
-function showToast(msg, ms=1800){
-  toast.textContent=msg; toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'), ms);
-}
-function setErr(msg){
-  if(!msg){errBox.style.display='none'; errBox.textContent=''; return;}
-  errBox.textContent = msg;
-  errBox.style.display='block';
-}
-function b64FromBlob(blob, maxW=768, quality=.82){
-  return new Promise((resolve,reject)=>{
-    const img = new Image();
-    img.onload = ()=>{
-      const scale = Math.min(1, maxW / img.width);
-      const w = Math.round(img.width * scale);
-      const h = Math.round(img.height * scale);
-      canvas.width=w; canvas.height=h;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0,w,h);
-      const dataURL = canvas.toDataURL('image/jpeg', quality);
-      resolve(dataURL.split(',')[1]); // strip prefix
-    };
-    img.onerror = reject;
-    img.src = URL.createObjectURL(blob);
+  // Helpers
+  const setStatus = (msg, ok=false) => {
+    el.status.style.display = 'block';
+    el.status.classList.toggle('ok', !!ok);
+    el.status.innerHTML = msg;
+  };
+  const clearStatus = () => { el.status.style.display = 'none'; }
+
+  const isMobile = () => matchMedia('(pointer:coarse)').matches;
+
+  // Hide file picker on mobile (unless debug=1)
+  const debug = qs('debug') === '1';
+  if (isMobile() && !debug) {
+    const wrap = document.getElementById('fileInputWrap');
+    if (wrap) wrap.style.display = 'none';
+  }
+
+  // Camera
+  async function startCamera() {
+    try{
+      stream?.getTracks()?.forEach(t => t.stop());
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}, audio:false});
+      el.video.srcObject = stream;
+      el.camLabel.textContent = 'ON';
+      el.video.play().catch(()=>{});
+    }catch(err){
+      console.warn('camera error', err);
+      setStatus('कैमरा एरर: अनुमति दें या किसी और ब्राउज़र से कोशिश करें।', false);
+    }
+  }
+  function stopCamera(){
+    stream?.getTracks()?.forEach(t => t.stop());
+    stream = null;
+    el.camLabel.textContent = 'OFF';
+  }
+  function takeShot(){
+    const v = el.video;
+    if (!v.videoWidth) return null;
+    const c = el.snap;
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    const g = c.getContext('2d');
+    g.drawImage(v, 0, 0, c.width, c.height);
+    // Slight JPEG compression to keep payload light
+    lastShotDataUrl = c.toDataURL('image/jpeg', .9);
+    el.shotLabel.textContent = '✅';
+    return lastShotDataUrl;
+  }
+
+  el.btnStart.addEventListener('click', startCamera);
+  el.btnRetry.addEventListener('click', ()=>{ lastShotDataUrl=null; el.shotLabel.textContent='❌'; });
+  el.btnShot.addEventListener('click', takeShot);
+
+  // Auto‑camera on mobile
+  if (isMobile()) setTimeout(()=>el.btnStart.click(), 400);
+
+  // Read file to dataURL
+  const readFileAsDataUrl = file => new Promise((res, rej)=>{
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
   });
-}
-async function startCam(){
-  try{
-    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
-    video.srcObject = stream;
-    await video.play().catch(()=>{});
-  }catch(e){
-    console.warn('camera error', e);
-    setErr('कैमरा उपलब्ध नहीं। ऊपर “या फ़ाइल चुनें” से सेल्फ़ी चुनें।');
-  }
-}
-function stopCam(){
-  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
-  video.srcObject=null;
-}
-function capture(){
-  if(!video.videoWidth){ showToast('कैमरा तैयार नहीं'); return; }
-  const w=video.videoWidth, h=video.videoHeight;
-  canvas.width=w; canvas.height=h;
-  canvas.getContext('2d').drawImage(video,0,0,w,h);
-  canvas.toBlob(b=>{ selfieBlob=b; showToast('सेल्फ़ी सेव हो गई'); }, 'image/jpeg', .9);
-}
-function dl(url, name){
-  const a=document.createElement('a'); a.href=url; a.download=name||'photo.jpg';
-  document.body.appendChild(a); a.click(); a.remove();
-}
 
-/* API wrapper with better errors + mock */
-async function fetchSmart(path, body){
-  if(MOCK){
-    // Fake 10 items
-    await new Promise(r=>setTimeout(r,500));
-    return {
-      ok:true,
-      data:{
-        count:10,
-        items: Array.from({length:10}).map((_,i)=>({
-          id:`IMG_${9050+i}`,
-          s3Key:`events/${EVENT_ID}/originals/IMG_${9050+i}.jpg`,
-          similarity: 98-i
-        }))
+  // API helpers
+  async function fetchJSON(url, opts={}){
+    const t = setTimeout(()=>controller.abort(), 30000);
+    const controller = new AbortController();
+    try{
+      const r = await fetch(url, {...opts, signal:controller.signal});
+      const body = await r.text();
+      let data = null;
+      try{ data = body ? JSON.parse(body) : null; }catch(e){ /* keep text */ }
+      if (!r.ok) {
+        console.warn('api error', r.status, body);
+        throw new Error(`API ${r.status}`);
       }
-    };
+      return data ?? {};
+    }finally{
+      clearTimeout(t);
+    }
   }
-  const url = `${API_BASE}${path}`;
-  const res = await fetch(url,{
-    method:'POST',
-    headers:{'content-type':'application/json'},
-    body: JSON.stringify(body),
-    mode:'cors',
-    credentials:'omit'
-  }).catch(err=>{
-    throw new Error('नेटवर्क/ब्राउज़र त्रुटि: '+err.message);
+
+  function render(itemsList){
+    items = itemsList || [];
+    el.grid.innerHTML = '';
+    el.found.textContent = items.length;
+    selected.clear();
+
+    if (!items.length){
+      setStatus('कोई रिज़ल्ट नहीं मिला।', false);
+      return;
+    }
+    clearStatus();
+
+    for (const it of items){
+      const key = it.s3Key || it.key || '';
+      const imgSrc = demo
+        ? placeholder(it.photoId || 'IMG')
+        : `${apiBase.replace(/\/$/,'')}/download?key=${encodeURIComponent(key)}`;
+
+      const card = document.createElement('div');
+      card.className = 'photo';
+      card.innerHTML = `
+        <img loading="lazy" src="${imgSrc}" alt="${it.photoId || ''}"/>
+        <a class="dl" target="_blank" href="${imgSrc}" title="Download">⬇</a>
+        <div class="chip">${(it.photoId || '').toString().slice(0,16)} • ~${Math.round((it.similarity||it.score||0))}%</div>
+        <div class="sel"></div>
+      `;
+      const sel = card.querySelector('.sel');
+      sel.addEventListener('click', () => {
+        if (selected.has(key)) { selected.delete(key); sel.classList.remove('selected'); }
+        else { selected.add(key); sel.classList.add('selected'); }
+      });
+      el.grid.appendChild(card);
+    }
+  }
+
+  // Placeholders for demo/offline
+  function placeholder(label='IMG'){
+    // simple SVG preview (fast + no network)
+    const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'>
+      <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0' stop-color='#f5f5f5'/><stop offset='1' stop-color='#ddd'/>
+      </linearGradient></defs>
+      <rect width='100%' height='100%' fill='url(#g)'/>
+      <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'
+        font-family='Arial,Helvetica' font-size='36' fill='#444'>${label}</text>
+    </svg>`);
+    return `data:image/svg+xml,${svg}`;
+  }
+
+  // Bulk download – open a new tab with link list (mobile friendly)
+  el.btnBulk.addEventListener('click', () => {
+    if (!selected.size) { setStatus('कोई फोटो चुना नहीं है।', false); return; }
+    const w = window.open('', '_blank');
+    w.document.write('<title>Download Selected</title><h3>Tap links to download</h3>');
+    const base = demo ? '' : apiBase.replace(/\/$/,'');
+    for (const k of selected) {
+      const href = demo ? placeholder('IMG') : `${base}/download?key=${encodeURIComponent(k)}`;
+      w.document.write(`<p><a href="${href}" download target="_blank">${k}</a></p>`);
+    }
+    w.document.close();
   });
-  let text = await res.text();
-  let json;
-  try{ json = text ? JSON.parse(text) : {}; }catch(e){
-    throw new Error('Unexpected response. Not JSON: '+ text?.slice(0,120));
-  }
-  if(!res.ok){
-    // surface backend message if present
-    const m = json?.message || json?.error || ('HTTP '+res.status);
-    throw new Error(m);
-  }
-  return {ok:true,data:json};
-}
-
-/* ---------- RENDER ---------- */
-function render(items=[]){
-  lastResults = items;
-  thumbs.innerHTML='';
-  selected.clear(); updateBulk();
-  items.forEach((it, idx)=>{
-    const key = it.s3Key || it.key || '';
-    const id  = it.photoId || it.id || key.split('/').pop();
-    const sim = it.similarity!=null ? `~${it.similarity}%` : '';
-    const imgUrl = `${API_BASE}/download?key=${encodeURIComponent(key)}`;
-
-    const card = document.createElement('div');
-    card.className = 'thumb';
-    card.innerHTML = `
-      <span class="tick">✓</span>
-      <img alt="">
-      <span class="meta">ID: ${id} • ${sim}</span>
-      <a class="dl" title="Download" href="${imgUrl}" download="${id}.jpg">⬇</a>
-    `;
-    const img = card.querySelector('img');
-    img.src = imgUrl;
-    img.onerror = ()=>{ img.remove(); card.innerHTML = `
-      <span class="tick">✓</span>
-      <div style="height:100%;display:grid;place-items:center;color:#999">No preview</div>
-      <span class="meta">ID: ${id} • ${sim}</span>
-      <a class="dl" title="Download" href="${imgUrl}" download="${id}.jpg">⬇</a>`; };
-
-    // click to select
-    card.addEventListener('click', (e)=>{
-      if(e.target.closest('.dl')) return; // downloading
-      if(card.classList.toggle('selected')){
-        selected.add(idx);
-      }else{
-        selected.delete(idx);
-      }
-      updateBulk();
+  el.btnSelAll.addEventListener('click', () => {
+    selected.clear();
+    $$(' .photo .sel', el.grid).forEach((s,i)=>{
+      const key = items[i]?.s3Key || items[i]?.key; if(!key) return;
+      selected.add(key); s.classList.add('selected');
     });
-
-    thumbs.appendChild(card);
   });
-  foundChip.textContent = `मिले ${items.length}`;
-}
-function updateBulk(){
-  const n = selected.size;
-  bulkBtn.disabled = n==0;
-  bulkBtn.textContent = n? `Download Selected (${n})` : 'Download Selected';
-}
+  el.btnClear.addEventListener('click', () => {
+    selected.clear();
+    $$(' .photo .sel', el.grid).forEach(s=>s.classList.remove('selected'));
+  });
 
-/* ---------- SEARCH ---------- */
-async function doSearch(){
-  setErr('');
-  const phone = (phoneInp.value || '').replace(/\D/g,'');
-  if(phone.length!==10){ setErr('कृपया 10 अंकों का मोबाइल भरें।'); return; }
+  // Validate 10-digit
+  function validMobile(m){ return /^[6-9][0-9]{9}$/.test((m||'').trim()); }
 
-  let imgB64 = null;
-  if(selfieBlob){
-    imgB64 = await b64FromBlob(selfieBlob);
-  }else if(fileInp.files[0]){
-    imgB64 = await b64FromBlob(fileInp.files[0]);
+  // SEARCH
+  el.btnSearch.addEventListener('click', doSearch);
+  async function doSearch(){
+    try{
+      const name = el.name.value.trim();
+      const mobile = el.mobile.value.trim();
+      if (!name){ setStatus('कृपया नाम भरें।'); return; }
+      if (!validMobile(mobile)){ setStatus('कृपया 10 अंकों का मोबाइल भरें।'); return; }
+
+      el.btnSearch.disabled = true;
+      setStatus('खोज जारी है…');
+
+      let imageBase64 = null;
+
+      // priority: file → selfie → (demo fallback)
+      if (el.file.files?.[0]) {
+        const dataUrl = await readFileAsDataUrl(el.file.files[0]);
+        imageBase64 = dataUrl.split(',')[1];
+      } else if (lastShotDataUrl) {
+        imageBase64 = lastShotDataUrl.split(',')[1];
+      }
+
+      if (demo){
+        // offline/demo results
+        const mocks = Array.from({length:10}).map((_,i)=>({
+          s3Key:`events/${eventId}/originals/IMG_${String(3800+i).padStart(4,'0')}.jpg`,
+          similarity: 100 - i,
+          photoId: `IMG_${String(3800+i).padStart(4,'0')}`
+        }));
+        render(mocks);
+        setStatus('DEMO मोड: नेटवर्क के बिना नकली थम्बनेल दिखाए जा रहे हैं।', true);
+        return;
+      }
+
+      // Real API
+      const body = {
+        name, mobile, eventId,
+        imageBase64
+      };
+      const resp = await fetchJSON(`${apiBase.replace(/\/$/,'')}/search`, {
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify(body)
+      });
+
+      const results = resp?.results || resp?.items || resp || [];
+      render(results);
+      setStatus(`मिले ${results.length} फोटो।`, true);
+
+      if (newTab){
+        const w = window.open('', '_blank');
+        w.document.write('<title>Search Results</title>');
+        for (const it of results){
+          const key = it.s3Key || it.key || '';
+          const href = `${apiBase.replace(/\/$/,'')}/download?key=${encodeURIComponent(key)}`;
+          w.document.write(`<p><a href="${href}" target="_blank">${it.photoId || key}</a></p>`);
+        }
+        w.document.close();
+      }
+    }catch(err){
+      console.error('search error', err);
+      setStatus(`सर्व में दिक्कत: ${err.message || err}`, false);
+    }finally{
+      el.btnSearch.disabled = false;
+    }
   }
-  if(!imgB64 && !MOCK){ setErr('सेल्फ़ी लें या फ़ाइल चुनें।'); return; }
 
-  searchBtn.disabled = true;
-  const t0 = performance.now();
-  try{
-    const payload = {
-      eventId: EVENT_ID,
-      minSimilarity: SIM,
-      maxResults: MAX,
-      name: nameInp.value || undefined,
-      phone: phone,
-      imageBase64: imgB64 || undefined
-    };
-    // When no image in MOCK, still return data
-    const resp = await fetchSmart('/search', payload);
-    const items = resp?.data?.items || resp?.data?.results || [];
-    render(items);
-    const ms = Math.round(performance.now()-t0);
-    timeChip.textContent = `${ms} ms`;
-    showToast(`मिले ${items.length} फोटो`);
-  }catch(err){
-    console.error('search error', err);
-    setErr('सर्व में दिक्कत: ' + (err.message || err));
-  }finally{
-    searchBtn.disabled = false;
-  }
-}
-
-/* ---------- BULK DL ---------- */
-async function bulkDownload(){
-  if(!selected.size) return;
-  showToast('डाउनलोड शुरू…');
-  for(const idx of selected){
-    const it = lastResults[idx];
-    const key = it.s3Key || it.key || '';
-    const id  = it.photoId || it.id || key.split('/').pop();
-    const url = `${API_BASE}/download?key=${encodeURIComponent(key)}`;
-    await new Promise(r=>setTimeout(r,160));
-    dl(url, id+'.jpg');
-  }
-}
-
-/* ---------- INIT ---------- */
-startCam();
-
-snapBtn.addEventListener('click', capture);
-restartBtn.addEventListener('click', ()=>{
-  selfieBlob=null; startCam(); showToast('कैमरा चालू');
-});
-searchBtn.addEventListener('click', doSearch);
-bulkBtn.addEventListener('click', bulkDownload);
-selAllBtn.addEventListener('click', ()=>{
-  selected.clear();
-  [...thumbs.children].forEach((el,i)=>{ el.classList.add('selected'); selected.add(i);});
-  updateBulk();
-});
-
-/* small UX helpers */
-phoneInp.addEventListener('input', e=>{
-  e.target.value = e.target.value.replace(/\D/g,'').slice(0,10);
-  if(e.target.value.length===10) setErr('');
-});
+  // Autofocus
+  el.name.focus();
+})();
 </script>
 </body>
 </html>
