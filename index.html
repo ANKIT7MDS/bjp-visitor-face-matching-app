@@ -493,19 +493,48 @@ function buildImgUrlFromKey(key){
   return API_BASE + '/download?key=' + encodeURIComponent(key); 
 }
 function buildKeyCandidates(r){
+  // 1) If server already gives a direct key/path, prefer it
   const prim = primaryKey(r);
   if (prim) return [prim];
 
+  // 2) Build smart guesses for common folder layouts
   const ev  = r.eventId || r.event || DEFAULT_EVENT_ID;
-  const pid = getId(r);
+  let pid   = getId(r) || r.filename || r.fileName || r.name || '';
+
+  // If id itself looks like a key (has a slash), honor it first
   const keys = [];
-  if(ev && pid){
-    const base = `events/${ev}/originals/${pid}`;
-    ['.jpg','.JPG','.jpeg','.JPEG','.png','.webp'].forEach(ext => keys.push(base+ext));
+  const push = (k)=>{ if(k && !keys.includes(k)) keys.push(k); };
+
+  if(pid.includes('/')){
+    // If it doesn't start with events/, scope it to events/<eventId>/
+    push(pid.startsWith('events/') ? pid : `events/${ev}/${pid}`);
   }
+
+  // Normalize: if pid has extension already, keep it; else try common extensions
+  const hasExt = /\.(jpg|jpeg|png|webp)$/i.test(pid);
+  const nameCandidates = hasExt ? [pid] : [pid + '.jpg', pid + '.jpeg', pid + '.png', pid + '.webp',
+                                        pid + '.JPG', pid + '.JPEG', pid + '.PNG', pid + '.WEBP'];
+
+  // Common folder patterns used in S3 structures
+  const folders = [
+    'originals',       // events/<ev>/originals/<name>
+    '',                // events/<ev>/<name>
+    'photos',          // events/<ev>/photos/<name>
+    'images',          // events/<ev>/images/<name>
+    'img',             // events/<ev>/img/<name>
+    'raw',             // events/<ev>/raw/<name>
+    'ORIGINALS', 'Photos', 'Images' // some people use caps
+  ];
+
+  for(const f of folders){
+    for(const nm of nameCandidates){
+      push(`events/${ev}/${f ? f + '/' : ''}${nm}`);
+    }
+  }
+
   return keys;
 }
-function tryNextImg(img){
+function tryNextImg(img){(img){
   let rest=[];
   try{ rest = JSON.parse(img.dataset.keys||'[]'); }catch{}
   if(!rest.length){
@@ -585,9 +614,21 @@ async function runTests(){
 
   // 4) buildKeyCandidates fallback
   try{
-    const ks = buildKeyCandidates({ id:'123', eventId:'ev1' });
-    console.assert(Array.isArray(ks) && ks.length>=1, 'Key candidates should be built');
-    logTest('✓ buildKeyCandidates test passed');
+    const ks1 = buildKeyCandidates({ id:'123', eventId:'ev1' });
+    console.assert(Array.isArray(ks1) && ks1.some(k=>k.startsWith('events/ev1/')), 'Key candidates should be built for id only');
+
+    const ks2 = buildKeyCandidates({ id:'folder/name', eventId:'ev2' });
+    console.assert(ks2.includes('events/ev2/folder/name') || ks2.includes('folder/name'), 'Should honor slash-containing ids');
+
+    const ks3 = buildKeyCandidates({ fileName:'IMG_0001.JPG', eventId:'ev3' });
+    console.assert(ks3.some(k=>k.endsWith('IMG_0001.JPG')), 'Should keep existing extension');
+
+    const ks4 = buildKeyCandidates({ id:'abc', eventId:'EVT_2025_08_12' });
+    const expected1 = 'events/EVT_2025_08_12/originals/abc.jpg';
+    const expected2 = 'events/EVT_2025_08_12/abc.jpg';
+    console.assert(ks4.includes(expected1) && ks4.includes(expected2), 'Should cover originals/ and no-folder');
+
+    logTest('✓ buildKeyCandidates tests passed');
   }catch(e){ logTest('✗ buildKeyCandidates failed: ' + e); }
 
   logTest('✅ Tests finished.');
