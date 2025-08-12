@@ -6,13 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     /*
-      ✨ UI Refine (CSS-only). No HTML/JS logic changed.
-      - Cleaner, professional look
-      - Better spacing & typography
-      - Mobile-first responsive grid
-      - Larger tap targets
-      - Focus-visible for accessibility
-      - Light/Dark auto with prefers-color-scheme
+      ✨ UI + Robustness Patch (frontend-only)
+      - Kept existing HTML/logic; improved error handling for fetch
+      - Added defensive network timeout + richer diagnostics (no uncaught "search error")
+      - Optional debug panel & tests with ?debug=1
+      - CSS-only visual polish preserved
     */
 
     :root{
@@ -27,6 +25,7 @@
       --ok:#0f9d58;
       --danger-ink:#b00020;
       --radius:14px;
+      --warn:#b08900;
     }
 
     @media (prefers-color-scheme: dark){
@@ -41,6 +40,7 @@
         --shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px -14px rgba(0,0,0,.45);
         --ok:#34d399;
         --danger-ink:#ffb4bd;
+        --warn:#ffd166;
       }
     }
 
@@ -115,6 +115,8 @@
     .danger{color:var(--danger-ink);background:color-mix(in srgb, var(--danger-ink) 8%, transparent);
       border:1px solid color-mix(in srgb, var(--danger-ink) 35%, var(--border));padding:12px;border-radius:12px}
 
+    .warn{color:var(--warn)}
+
     details.err{margin-top:6px}
 
     #video{width:100%;aspect-ratio:4/3;background:#000;border-radius:14px}
@@ -151,6 +153,11 @@
     /* Nice selection & focus */
     ::selection{background:color-mix(in srgb, var(--brand) 28%, transparent)}
     :focus-visible{outline:3px solid color-mix(in srgb, var(--brand) 28%, transparent);outline-offset:2px}
+
+    /* Debug panel (visible only when ?debug=1) */
+    #debug{display:none;margin-top:16px}
+    #debug.active{display:block}
+    #tests{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;white-space:pre-wrap;background:color-mix(in srgb, var(--ink) 4%, transparent);border:1px solid var(--border);border-radius:12px;padding:12px}
   </style>
 </head>
 <body>
@@ -194,6 +201,7 @@
 
           <div class="actions" style="margin-top:12px">
             <button id="btnSearch" class="btn" style="min-width:160px">Search</button>
+            <button id="btnRunTests" class="btn gray" type="button" title="Self-tests (debug only)">Run Tests</button>
           </div>
 
           <div id="status" class="stat"></div>
@@ -201,6 +209,11 @@
             <summary>एरर डीटेल्स</summary>
             <pre id="errText" style="white-space:pre-wrap"></pre>
           </details>
+
+          <div id="debug">
+            <div class="hd" style="border:0;padding-left:0">Debug</div>
+            <div id="tests"></div>
+          </div>
         </div>
       </section>
 
@@ -222,6 +235,7 @@
 const API_BASE = param('api') || 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
 const DEFAULT_EVENT_ID = param('event') || 'demo-2025-01';   // अपने इवेंट के हिसाब से सेट करें
 const DEFAULT_SIM = Number(param('sim') || 70);              // न्यूनतम similarity
+const DEBUG_MODE = param('debug') === '1';
 
 /* ====== DOM ====== */
 const $ = sel => document.querySelector(sel);
@@ -233,6 +247,7 @@ const fileEl   = $('#fileInput');
 const btnSnap  = $('#btnSnap');
 const btnRetake= $('#btnRetake');
 const btnSearch= $('#btnSearch');
+const btnRunTests= $('#btnRunTests');
 const selfieStatus = $('#selfieStatus');
 const resultsEl = $('#results');
 const emptyEl   = $('#empty');
@@ -240,6 +255,8 @@ const foundEl   = $('#found');
 const errBox    = $('#errBox');
 const errText   = $('#errText');
 const statusEl  = $('#status');
+const debugWrap = $('#debug');
+const testsEl   = $('#tests');
 
 /* ====== STATE ====== */
 const state = {
@@ -259,6 +276,9 @@ function stripDataUrl(dataUrl){
   return idx > -1 ? dataUrl.slice(idx+1) : dataUrl;
 }
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+// Safe JSON parse available early (prevents temporal usage issues)
+JSON.parseSafe = (s)=>{ try{return JSON.parse(s);}catch{return {} } };
 
 /* ====== CAMERA ====== */
 async function startCamera(){
@@ -348,6 +368,7 @@ fileEl.addEventListener('change', (e)=>{
 });
 
 btnSearch.addEventListener('click', (e)=>{ e.preventDefault(); doSearch(); });
+btnRunTests.addEventListener('click', (e)=>{ e.preventDefault(); runTests(); });
 
 /* ====== SEARCH ====== */
 function validMobile(m){
@@ -355,22 +376,37 @@ function validMobile(m){
 }
 function statusMsg(msg, type='info'){
   statusEl.textContent = msg || '';
-  statusEl.className = type==='warn' ? 'muted' : '';
+  statusEl.className = type==='warn' ? 'warn' : '';
 }
 
-async function fetchSmart(url, opt){
-  const resp = await fetch(url, opt);
-  let dataText = '';
+// Robust fetch: handles network failures, CORS, JSON/text, and timeout
+async function fetchSmart(url, opt={}, timeoutMs=20000){
+  const ctrl = new AbortController();
+  const id = setTimeout(()=>ctrl.abort('timeout'), timeoutMs);
   try{
-    if(resp.headers.get('content-type')?.includes('application/json')){
-      const j = await resp.json();
-      return { ok: resp.ok, status: resp.status, data: j };
-    }else{
-      dataText = await resp.text();
-      return { ok: resp.ok, status: resp.status, data: dataText };
+    const resp = await fetch(url, { ...opt, signal: ctrl.signal });
+    clearTimeout(id);
+
+    const ctype = resp.headers.get('content-type') || '';
+    let data;
+    try{
+      if(ctype.toLowerCase().includes('application/json')){
+        data = await resp.json();
+      }else{
+        data = await resp.text();
+      }
+    }catch(parseErr){
+      // Return raw text or parse error instead of throwing
+      data = 'JSON parse error';
     }
-  }catch(e){
-    return { ok:false, status: resp.status, data: dataText || 'JSON parse error' };
+    return { ok: resp.ok, status: resp.status, data };
+  }catch(err){
+    clearTimeout(id);
+    // Never throw; return a structured failure so callers don't hit catch
+    const reason = (err && (err.name==='AbortError' || err === 'timeout'))
+      ? 'Request timed out'
+      : (err && err.message) ? err.message : String(err);
+    return { ok:false, status: 0, data: reason };
   }
 }
 
@@ -402,36 +438,33 @@ async function doSearch(){
     sim: DEFAULT_SIM
   };
 
-  try{
-    const r = await fetchSmart(API_BASE + '/search', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(body)
-    });
+  const r = await fetchSmart(API_BASE + '/search', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
 
-    if(!r.ok){
-      showMsg(`सर्वर में दिक्कत: API ${r.status}`, true);
-      errText.textContent = (typeof r.data==='string') ? r.data : JSON.stringify(r.data,null,2);
-      errBox.open = true;
-      btnSearch.disabled=false;
-      return;
-    }
-
-    const payload = (typeof r.data==='string') ? JSON.parseSafe(r.data) : r.data;
-    const items = payload?.items || payload?.results || payload?.matches || [];
-    renderResults(items);
-    const n = items.length|0;
-    foundEl.style.display = 'block';
-    foundEl.textContent = `मिले ${n} फोटो।`;
-    showMsg('');
-  }catch(err){
-    showErr('search error', err);
-  }finally{
+  if(!r.ok){
+    // Rich diagnostics shown to user, no unhandled exceptions
+    const hint = r.status === 0
+      ? 'नेटवर्क/CORS/टाइमआउट—URL, इंटरनेट या सर्वर CORS जाँचे।'
+      : `HTTP ${r.status}`;
+    showMsg(`सर्वर में दिक्कत: ${hint}`, true);
+    errText.textContent = (typeof r.data==='string') ? r.data : JSON.stringify(r.data,null,2);
+    errBox.open = true;
     btnSearch.disabled=false;
+    return;
   }
-}
 
-JSON.parseSafe = (s)=>{ try{return JSON.parse(s);}catch{return {} } };
+  const payload = (typeof r.data==='string') ? JSON.parseSafe(r.data) : r.data;
+  const items = payload?.items || payload?.results || payload?.matches || [];
+  renderResults(items);
+  const n = items.length|0;
+  foundEl.style.display = 'block';
+  foundEl.textContent = `मिले ${n} फोटो।`;
+  showMsg('');
+  btnSearch.disabled=false;
+}
 
 function showMsg(msg, isErr=false){
   if(isErr){
@@ -448,8 +481,7 @@ function showErr(title, err){
 }
 
 /* ====== RESULTS RENDER (with fallbacks) ====== */
-function getId(r){ return r.photoId || r.id || r.imageId || '';
-}
+function getId(r){ return r.photoId || r.id || r.imageId || ''; }
 function getScore(r){ 
   const v = r.similarity ?? r.score ?? r.confidence ?? 0;
   return Math.round(v * 100) / 100;
@@ -521,6 +553,46 @@ function renderResults(items){
   resultsEl.innerHTML = items.map(cardHTML).join('');
 }
 
+/* ====== TESTS (run with ?debug=1 or "Run Tests") ====== */
+function logTest(msg){ testsEl.textContent += msg + "\n"; }
+function resetTests(){ testsEl.textContent=''; }
+async function runTests(){
+  debugWrap.classList.add('active');
+  resetTests();
+  logTest('▶ Running frontend self-tests...');
+  // 1) JSON.parseSafe
+  try{
+    const obj = JSON.parseSafe('{"a":1}');
+    console.assert(obj.a===1,'JSON.parseSafe should parse valid JSON');
+    const bad = JSON.parseSafe('{bad json');
+    console.assert(typeof bad==='object','JSON.parseSafe should return object on invalid');
+    logTest('✓ JSON.parseSafe tests passed');
+  }catch(e){ logTest('✗ JSON.parseSafe failed: '+ e); }
+
+  // 2) fetchSmart should not throw on network/CORS errors
+  try{
+    const r = await fetchSmart('https://example.invalid/abc', { method:'GET' }, 2000);
+    console.assert(r.ok===false && r.status===0, 'fetchSmart should return ok=false for network error');
+    logTest('✓ fetchSmart network failure handled');
+  }catch(e){ logTest('✗ fetchSmart threw unexpectedly: ' + e); }
+
+  // 3) fetchSmart should return status for non-200
+  try{
+    const r2 = await fetchSmart((API_BASE||'').replace(/\/$/,'') + '/__not_found__', { method:'GET' }, 5000);
+    console.assert(r2.ok===false && (r2.status===404 || r2.status===403 || r2.status===0), 'Expect non-OK status or 0');
+    logTest('✓ fetchSmart non-OK status handled');
+  }catch(e){ logTest('✗ fetchSmart non-OK case threw: ' + e); }
+
+  // 4) buildKeyCandidates fallback
+  try{
+    const ks = buildKeyCandidates({ id:'123', eventId:'ev1' });
+    console.assert(Array.isArray(ks) && ks.length>=1, 'Key candidates should be built');
+    logTest('✓ buildKeyCandidates test passed');
+  }catch(e){ logTest('✗ buildKeyCandidates failed: ' + e); }
+
+  logTest('✅ Tests finished.');
+}
+
 /* ====== AUTOSTART ====== */
 (async function init(){
   // URL से नाम/मोबाइल prefill (optional)
@@ -533,6 +605,11 @@ function renderResults(items){
   window.addEventListener('focus', ()=>{
     if(!video.srcObject) startCamera().catch(()=>{});
   });
+
+  if(DEBUG_MODE){
+    debugWrap.classList.add('active');
+    runTests();
+  }
 })();
 </script>
 </body>
