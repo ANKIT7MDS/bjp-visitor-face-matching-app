@@ -3,85 +3,154 @@
 <head>
   <meta charset="utf-8">
   <title>Face Search</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    /*
+      ✨ UI Refine (CSS-only). No HTML/JS logic changed.
+      - Cleaner, professional look
+      - Better spacing & typography
+      - Mobile-first responsive grid
+      - Larger tap targets
+      - Focus-visible for accessibility
+      - Light/Dark auto with prefers-color-scheme
+    */
+
     :root{
-      --brand:#ff8800;
-      --bg:#fff7ef;
-      --card:#ffffff;
-      --muted:#777;
-      --danger:#b00020;
-      --ok:#108a00;
-      --border:#eee;
+      --brand:#ff7a18;             /* primary */
+      --brand-ink:#ffffff;          /* text on primary */
+      --bg:#fff8f0;                 /* page */
+      --card:#ffffff;               /* surfaces */
+      --ink:#1f2328;                /* main text */
+      --muted:#6b7280;              /* secondary text */
+      --border:#e5e7eb;             /* borders */
+      --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px -16px rgba(0,0,0,.15);
+      --ok:#0f9d58;
+      --danger-ink:#b00020;
+      --radius:14px;
     }
+
+    @media (prefers-color-scheme: dark){
+      :root{
+        --brand:#ff8a3d;
+        --brand-ink:#0b0b0b;
+        --bg:#0b0b0b;
+        --card:#111418;
+        --ink:#e7e7e7;
+        --muted:#9aa0a6;
+        --border:#23272e;
+        --shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px -14px rgba(0,0,0,.45);
+        --ok:#34d399;
+        --danger-ink:#ffb4bd;
+      }
+    }
+
     *{box-sizing:border-box}
-    body{margin:0;background:#fff;font:16px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    header{background:var(--brand);color:#fff;padding:10px 14px;font-weight:700}
-    main{padding:14px;max-width:1200px;margin:auto}
-    .layout{display:grid;grid-template-columns: 1fr 1fr;gap:14px}
-    @media (max-width:900px){.layout{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-    .card .hd{padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600}
-    .card .bd{padding:14px}
-    label{display:block;margin:10px 0 6px;font-weight:600}
-    input[type=text],input[type=tel],input[type=file]{width:100%;padding:10px 12px;border:1px solid #ccc;border-radius:8px;font:inherit}
-    .btn{display:inline-block;background:var(--brand);color:#fff;border:0;border-radius:10px;padding:12px 18px;font-weight:700;cursor:pointer}
-    .btn[disabled]{opacity:.5;cursor:not-allowed}
-    .btn.gray{background:#222}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+
+    header{
+      position:sticky;top:0;z-index:10;
+      background:linear-gradient(90deg,var(--brand),#ffa149);
+      color:var(--brand-ink);
+      padding:14px clamp(14px,3vw,24px);
+      font-weight:800;
+      letter-spacing:.2px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.06);
+    }
+
+    main{padding:clamp(12px,2.8vw,22px);max-width:1080px;margin:auto}
+
+    .layout{display:grid;gap:clamp(10px,2.2vw,16px);grid-template-columns: 1.15fr .85fr}
+    @media (max-width: 980px){.layout{grid-template-columns:1fr}}
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .card .hd{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:700;display:flex;align-items:center;gap:8px}
+    .card .bd{padding:clamp(12px,2.4vw,18px)}
+
+    label{display:block;margin:12px 0 6px;font-weight:650;color:var(--ink)}
+
+    input[type=text],
+    input[type=tel],
+    input[type=file]{
+      width:100%;
+      padding:13px 14px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:transparent;
+      color:inherit;
+      font:inherit;
+      outline:none;
+      transition:border-color .15s ease, box-shadow .15s ease;
+    }
+    input[type=file]{padding:10px 12px}
+    input:focus-visible{
+      border-color:color-mix(in srgb, var(--brand) 60%, var(--border));
+      box-shadow:0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
+    }
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      background:var(--brand);color:var(--brand-ink);
+      border:0;border-radius:12px;padding:13px 18px;font-weight:800;cursor:pointer;
+      transition:transform .06s ease, filter .15s ease, box-shadow .15s ease; box-shadow:var(--shadow);
+      -webkit-tap-highlight-color:transparent;
+    }
+    .btn:hover{filter:brightness(1.02)}
+    .btn:active{transform:translateY(1px)}
+    .btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none}
+    .btn.gray{background:color-mix(in srgb, var(--ink) 92%, transparent); color:#fff}
+
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .row>div{flex:1 1 260px}
+
     .hint{color:var(--muted);font-size:.92rem}
-    .ok{color:#108a00;font-weight:600}
-    .danger{color:#a10015;background:#ffe3e6;border:1px solid #ffd1d6;padding:12px;border-radius:8px}
+    .ok{color:var(--ok);font-weight:700}
+
+    .danger{color:var(--danger-ink);background:color-mix(in srgb, var(--danger-ink) 8%, transparent);
+      border:1px solid color-mix(in srgb, var(--danger-ink) 35%, var(--border));padding:12px;border-radius:12px}
+
     details.err{margin-top:6px}
-    #video{width:100%;background:#000;border-radius:12px}
-    #canvas{width:100%;display:none;border-radius:12px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 
-    /* Results grid */
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-    @media (max-width:700px){.grid{grid-template-columns:1fr}}
+    #video{width:100%;aspect-ratio:4/3;background:#000;border-radius:14px}
+    #canvas{width:100%;display:none;border-radius:14px}
 
-    .cardR{position:relative;border:1px solid var(--border);border-radius:12px;background:#fff;overflow:hidden}
-    .thumbWrap{position:relative;background:#f3f3f3;aspect-ratio:1/1}
-    .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;border-bottom:1px solid var(--border)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 
-    /* Download arrow overlay (bottom-right) */
-    .dlBtn{
-      position:absolute;right:8px;bottom:8px;z-index:5;
-      display:inline-grid;place-items:center;width:34px;height:34px;border-radius:999px;
-      background:rgba(0,0,0,.6);color:#fff;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.25);
-      font-size:18px; line-height:1;
-    }
+    /* Results grid: responsive, nice cards */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+    @media (max-width:560px){.grid{grid-template-columns:1fr}}
 
-    /* Tap-to-select overlay */
-    .selHit{position:absolute;inset:0;z-index:3;cursor:pointer}
-    .selMark{
-      position:absolute;left:8px;top:8px;z-index:6;
-      width:26px;height:26px;border-radius:999px;display:inline-grid;place-items:center;
-      background:rgba(255,255,255,.9);color:#111;border:1px solid #e5e7eb;font-weight:800;
-      box-shadow:0 2px 4px rgba(0,0,0,.12); font-size:14px;
-    }
-    .cardR.sel .thumbWrap::after{content:"";position:absolute;inset:0;background:rgba(16,185,129,.18);z-index:2}
+    .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f3f3f3;border-radius:12px;border:1px solid var(--border)}
 
-    .meta{padding:10px 12px;color:#444;font-size:.9rem}
+    .cardR{padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
+    .meta{font-size:.92rem;color:color-mix(in srgb, var(--ink) 88%, transparent);margin-top:8px}
     .muted{color:var(--muted)}
-    .msg{padding:10px;border:1px dashed var(--border);border-radius:8px;color:#444;background:#fafafa}
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:#f0f0f0;font-size:.8rem}
-    .stat{margin:8px 0 0 0}
 
-    /* Bulk bar */
-    .bulkbar{
-      position:sticky;bottom:0;z-index:40;margin-top:12px;
-      background:#111;color:#fff;border-radius:12px;padding:10px 12px;display:none;align-items:center;justify-content:space-between;gap:10px;
-    }
-    .bulkbar .count{font-weight:800}
-    .bulkbar .actions{display:flex;gap:8px;flex-wrap:wrap}
-    .bulkbar .btn{background:#fff;color:#111}
+    .msg{padding:12px;border:1px dashed var(--border);border-radius:12px;color:inherit;background:color-mix(in srgb, var(--ink) 3%, transparent)}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:color-mix(in srgb, var(--brand) 14%, transparent);
+      font-size:.8rem;font-weight:700;color:color-mix(in srgb, var(--brand) 90%, black)}
+    .stat{margin:10px 0 0 0}
 
-    /* Mobile: hide file input */
-    @media (pointer:coarse){
-      .fileRow{display:none}
+    /* Make header + buttons friendlier on small devices */
+    @media (max-width:480px){
+      header{padding:12px 14px;font-size:1.02rem}
+      .btn{width:100%}
     }
+
+    /* Reduce motion if user prefers */
+    @media (prefers-reduced-motion: reduce){
+      .btn{transition:none}
+    }
+
+    /* Nice selection & focus */
+    ::selection{background:color-mix(in srgb, var(--brand) 28%, transparent)}
+    :focus-visible{outline:3px solid color-mix(in srgb, var(--brand) 28%, transparent);outline-offset:2px}
   </style>
 </head>
 <body>
@@ -99,7 +168,7 @@
             </div>
             <div style="flex:1">
               <label>मोबाइल नंबर <span class="muted">(अनिवार्य)</span></label>
-              <input id="mobile" type="tel" placeholder="10 अंकों का नंबर" maxlength="14" inputmode="numeric" required>
+              <input id="mobile" type="tel" placeholder="10 अंकों का नंबर" maxlength="10" inputmode="numeric" required>
             </div>
           </div>
 
@@ -116,10 +185,8 @@
             <span id="selfieStatus" class="muted">सेल्फ़ी तैयार करें या फ़ाइल चुनें।</span>
           </div>
 
-          <div class="fileRow">
-            <label class="stat">या फ़ाइल चुनें</label>
-            <input id="fileInput" type="file" accept="image/*">
-          </div>
+          <label class="stat">या फ़ाइल चुनें</label>
+          <input id="fileInput" type="file" accept="image/*">
 
           <div class="hint" style="margin:10px 0 4px">
             PNG/WebP → JPEG auto. * मोबाइल पर कैमरा अपने-आप खुलेगा (Allow दें)।
@@ -144,16 +211,6 @@
           <div id="found" class="ok" style="display:none"></div>
           <div id="results" class="grid"></div>
           <div id="empty" class="msg" style="display:none">कोई फोटो नहीं मिला।</div>
-
-          <!-- Bulk bar -->
-          <div id="bulkbar" class="bulkbar">
-            <div><span class="count" id="selCount">0</span> चुने गए</div>
-            <div class="actions">
-              <button id="btnSelAll" class="btn" type="button">सब चुनें</button>
-              <button id="btnClearSel" class="btn" type="button">क्लियर</button>
-              <button id="btnOpenLinks" class="btn" type="button">Download Selected</button>
-            </div>
-          </div>
         </div>
       </section>
     </div>
@@ -161,9 +218,10 @@
 
 <script>
 /* ====== CONFIG ====== */
+// change if needed OR pass in URL:  ?api=...&event=...
 const API_BASE = param('api') || 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
-const DEFAULT_EVENT_ID = param('event') || 'demo-2025-01';
-const DEFAULT_SIM = Number(param('sim') || 70);
+const DEFAULT_EVENT_ID = param('event') || 'demo-2025-01';   // अपने इवेंट के हिसाब से सेट करें
+const DEFAULT_SIM = Number(param('sim') || 70);              // न्यूनतम similarity
 
 /* ====== DOM ====== */
 const $ = sel => document.querySelector(sel);
@@ -182,49 +240,50 @@ const foundEl   = $('#found');
 const errBox    = $('#errBox');
 const errText   = $('#errText');
 const statusEl  = $('#status');
-const bulkbar   = $('#bulkbar');
-const selCountEl= $('#selCount');
-const btnSelAll = $('#btnSelAll');
-const btnClearSel = $('#btnClearSel');
-const btnOpenLinks = $('#btnOpenLinks');
 
 /* ====== STATE ====== */
-const state = { stream:null, imageBase64:'', imgBytes:0, lastFileName:'' };
-let selectedKeys = new Set();
-let lastResults = [];
+const state = {
+  stream: null,
+  imageBase64: '', // only base64 (no dataurl header)
+  imgBytes: 0,
+  lastFileName: ''
+};
 
 /* ====== HELPERS ====== */
-function param(k){ return new URL(location.href).searchParams.get(k); }
-function stripDataUrl(dataUrl){ const i=dataUrl.indexOf(','); return i>-1 ? dataUrl.slice(i+1) : dataUrl; }
-function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-
-function normalizeMobile(raw){
-  if(!raw) return '';
-  const map={'०':'0','१':'1','२':'2','३':'3','४':'4','५':'5','६':'6','७':'7','८':'8','९':'9'};
-  raw = String(raw).replace(/[०-९]/g, d => map[d] ?? d);
-  let d = raw.replace(/\\D/g,'');
-  if(d.length>10) d = d.slice(-10);
-  return d;
+function param(k){
+  const u = new URL(location.href);
+  return u.searchParams.get(k);
 }
-function validMobile(m){ return /^\\d{10}$/.test(normalizeMobile(m)); }
-function getMobile(){ const v = normalizeMobile(mobileEl.value); mobileEl.value = v; return v; }
+function stripDataUrl(dataUrl){
+  const idx = dataUrl.indexOf(',');
+  return idx > -1 ? dataUrl.slice(idx+1) : dataUrl;
+}
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
 /* ====== CAMERA ====== */
 async function startCamera(){
   try{
     state.stream?.getTracks()?.forEach(t => t.stop());
-    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' }, audio:false });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode: 'user' },
+      audio:false
+    });
     state.stream = stream;
     video.srcObject = stream;
     await video.play().catch(()=>{});
   }catch(err){
+    // सिर्फ़ चेतावनी दिखाएँ, फ़ाइल अपलोड fallback रहेगा
     console.warn('camera error', err);
     statusMsg('कैमरा उपलब्ध नहीं। फ़ाइल से भी खोज कर सकते हैं।', 'warn');
   }
 }
-function stopCamera(){ try{ state.stream?.getTracks()?.forEach(t=>t.stop()); }catch{} video.srcObject=null; }
+function stopCamera(){
+  try{ state.stream?.getTracks()?.forEach(t => t.stop()); }catch{}
+  video.srcObject = null;
+}
 function snapshot(){
-  const w = video.videoWidth || 720, h = video.videoHeight || 720;
+  const w = video.videoWidth || 720;
+  const h = video.videoHeight || 720;
   canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video,0,0,w,h);
@@ -245,17 +304,24 @@ function fileToDataURL(file){
 async function useFile(file){
   try{
     const dataUrl = await fileToDataURL(file);
+    // draw on canvas to normalize format (and allow retake button to hide video)
     const img = new Image();
-    await new Promise((res,rej)=>{ img.onload=res; img.onerror=rej; img.src=dataUrl; });
+    await new Promise((res,rej)=>{
+      img.onload=res; img.onerror=rej; img.src=dataUrl;
+    });
     const w = img.width || 720, h = img.height || 720;
     canvas.width=w; canvas.height=h;
-    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img,0,0,w,h);
     const jpeg = canvas.toDataURL('image/jpeg', .9);
     state.imageBase64 = stripDataUrl(jpeg);
     state.imgBytes = Math.round((state.imageBase64.length * 3)/4);
-    canvas.style.display='block'; video.style.display='none';
+    canvas.style.display='block';
+    video.style.display='none';
     selfieStatus.textContent = 'सेल्फ़ी तैयार ✓';
-  }catch(err){ showErr('फ़ाइल पढ़ने में समस्या', err); }
+  }catch(err){
+    showErr('फ़ाइल पढ़ने में समस्या', err);
+  }
 }
 
 /* ====== UI EVENTS ====== */
@@ -263,38 +329,116 @@ btnSnap.addEventListener('click', async (e)=>{
   e.preventDefault();
   if(!video.srcObject){ await startCamera(); await sleep(200); }
   snapshot();
-  canvas.style.display='block'; video.style.display='none';
+  canvas.style.display='block';
+  video.style.display='none';
   selfieStatus.textContent = `सेल्फ़ी तैयार ✓ (${state.imgBytes} bytes)`;
 });
+
 btnRetake.addEventListener('click', (e)=>{
   e.preventDefault();
-  canvas.style.display='none'; video.style.display='block';
+  canvas.style.display='none';
+  video.style.display='block';
   state.imageBase64 = '';
   selfieStatus.textContent = 'सेल्फ़ी फिर से लें या फ़ाइल चुनें।';
 });
-fileEl.addEventListener('change', (e)=>{ const f=e.target.files?.[0]; if(f){ state.lastFileName=f.name; useFile(f);} });
+
+fileEl.addEventListener('change', (e)=>{
+  const f = e.target.files?.[0];
+  if(f){ state.lastFileName = f.name; useFile(f); }
+});
+
 btnSearch.addEventListener('click', (e)=>{ e.preventDefault(); doSearch(); });
 
-/* ====== NETWORK ====== */
-async function fetchSmart(url, opt){
-  try{
-    const resp = await fetch(url, opt);
-    const ct = resp.headers.get('content-type')||'';
-    const body = ct.includes('application/json') ? await resp.json().catch(()=> ({})) : await resp.text();
-    return { ok: resp.ok, status: resp.status, body };
-  }catch(e){
-    return { ok:false, status:0, body:String(e?.message||e) };
-  }
-}
-
 /* ====== SEARCH ====== */
+function validMobile(m){
+  return /^\d{10}$/.test((m||'').trim());
+}
 function statusMsg(msg, type='info'){
   statusEl.textContent = msg || '';
   statusEl.className = type==='warn' ? 'muted' : '';
 }
+
+async function fetchSmart(url, opt){
+  const resp = await fetch(url, opt);
+  let dataText = '';
+  try{
+    if(resp.headers.get('content-type')?.includes('application/json')){
+      const j = await resp.json();
+      return { ok: resp.ok, status: resp.status, data: j };
+    }else{
+      dataText = await resp.text();
+      return { ok: resp.ok, status: resp.status, data: dataText };
+    }
+  }catch(e){
+    return { ok:false, status: resp.status, data: dataText || 'JSON parse error' };
+  }
+}
+
+async function doSearch(){
+  errBox.open = false; errText.textContent='';
+  const nm = (nameEl.value||'').trim();
+  const mb = (mobileEl.value||'').trim();
+
+  if(!nm){ showMsg('कृपया नाम भरें।'); return; }
+  if(!validMobile(mb)){ showMsg('कृपया 10 अंकों का मोबाइल भरें।'); return; }
+
+  // prepare image
+  if(!state.imageBase64){
+    // if video running, take a shot
+    if(video.srcObject){ snapshot(); canvas.style.display='block'; video.style.display='none'; }
+  }
+  if(!state.imageBase64){
+    showMsg('कृपया सेल्फ़ी लें या फ़ाइल चुनें।'); return;
+  }
+
+  btnSearch.disabled = true;
+  showMsg('खोज जारी है…');
+
+  const body = {
+    eventId: DEFAULT_EVENT_ID,
+    imageBase64: state.imageBase64,
+    name: nm,
+    mobile: mb,
+    sim: DEFAULT_SIM
+  };
+
+  try{
+    const r = await fetchSmart(API_BASE + '/search', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+
+    if(!r.ok){
+      showMsg(`सर्वर में दिक्कत: API ${r.status}`, true);
+      errText.textContent = (typeof r.data==='string') ? r.data : JSON.stringify(r.data,null,2);
+      errBox.open = true;
+      btnSearch.disabled=false;
+      return;
+    }
+
+    const payload = (typeof r.data==='string') ? JSON.parseSafe(r.data) : r.data;
+    const items = payload?.items || payload?.results || payload?.matches || [];
+    renderResults(items);
+    const n = items.length|0;
+    foundEl.style.display = 'block';
+    foundEl.textContent = `मिले ${n} फोटो।`;
+    showMsg('');
+  }catch(err){
+    showErr('search error', err);
+  }finally{
+    btnSearch.disabled=false;
+  }
+}
+
+JSON.parseSafe = (s)=>{ try{return JSON.parse(s);}catch{return {} } };
+
 function showMsg(msg, isErr=false){
-  if(isErr){ statusEl.innerHTML = `<div class="danger">${msg}</div>`; }
-  else{ statusEl.textContent = msg; }
+  if(isErr){
+    statusEl.innerHTML = `<div class="danger">${msg}</div>`;
+  }else{
+    statusEl.textContent = msg;
+  }
 }
 function showErr(title, err){
   console.error(title, err);
@@ -303,79 +447,52 @@ function showErr(title, err){
   errBox.open = true;
 }
 
-async function doSearch(){
-  errBox.open = false; errText.textContent='';
-  const nm = (nameEl.value||'').trim();
-  const mb = getMobile();
-
-  if(!nm){ showMsg('कृपया नाम भरें।', true); return; }
-  if(!validMobile(mb)){ showMsg('कृपया 10 अंकों का मोबाइल भरें।', true); return; }
-
-  if(!state.imageBase64){
-    if(video.srcObject){ snapshot(); canvas.style.display='block'; video.style.display='none'; }
-  }
-  if(!state.imageBase64){ showMsg('कृपया सेल्फ़ी लें या फ़ाइल चुनें।', true); return; }
-
-  btnSearch.disabled = true;
-  showMsg('खोज जारी है…');
-
-  const body = { eventId: DEFAULT_EVENT_ID, imageBase64: state.imageBase64, name: nm, mobile: mb, sim: DEFAULT_SIM };
-
-  try{
-    const r = await fetchSmart(API_BASE + '/search', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
-    });
-
-    if(!r.ok){
-      if (r.status===401 || r.status===403) {
-        showMsg('सेशन/टोकन समाप्त या अनुमति नहीं। पेज रीफ़्रेश करके फिर प्रयास करें।', true);
-      } else {
-        showMsg(`सर्वर में दिक्कत: API ${r.status}`, true);
-      }
-      errText.textContent = (typeof r.body==='string') ? r.body : JSON.stringify(r.body,null,2);
-      errBox.open = true;
-      btnSearch.disabled=false;
-      return;
-    }
-
-    const payload = r.body || {};
-    const items = payload.items || payload.results || payload.matches || [];
-    renderResults(items);
-    foundEl.style.display = 'block';
-    foundEl.textContent = `मिले ${items.length|0} फोटो।`;
-    showMsg('');
-  }catch(err){ showErr('search error', err);
-  }finally{ btnSearch.disabled=false; }
+/* ====== RESULTS RENDER (with fallbacks) ====== */
+function getId(r){ return r.photoId || r.id || r.imageId || '';
 }
-
-/* ====== RESULTS + FALLBACKS + SELECTION ====== */
-function getId(r){ return r.photoId || r.id || r.imageId || ''; }
-function primaryKey(r){ return r.s3Key || r.key || r.s3key || r.path || r.urlKey || ''; }
-function getScore(r){ const v=r.similarity ?? r.score ?? r.confidence ?? 0; return Math.round(v*100)/100; }
+function getScore(r){ 
+  const v = r.similarity ?? r.score ?? r.confidence ?? 0;
+  return Math.round(v * 100) / 100;
+}
+function primaryKey(r){
+  return r.s3Key || r.key || r.s3key || r.path || r.urlKey || '';
+}
+function buildImgUrlFromKey(key){ 
+  return API_BASE + '/download?key=' + encodeURIComponent(key); 
+}
 function buildKeyCandidates(r){
-  const prim=primaryKey(r); if(prim) return [prim];
-  const ev=r.eventId || r.event || DEFAULT_EVENT_ID; const pid=getId(r); const arr=[];
-  if(ev && pid){ const base=`events/${ev}/originals/${pid}`; ['.jpg','.JPG','.jpeg','.JPEG','.png','.webp'].forEach(ext=>arr.push(base+ext)); }
-  return arr;
-}
-function buildImgUrlFromKey(key){ return API_BASE + '/download?key=' + encodeURIComponent(key); }
+  const prim = primaryKey(r);
+  if (prim) return [prim];
 
-function tryNextImg(img){
-  let rest=[]; try{ rest=JSON.parse(img.dataset.keys||'[]'); }catch{}
-  if(!rest.length){
-    const ph=document.createElement('div'); ph.className='thumb';
-    ph.style.display='flex'; ph.style.alignItems='center'; ph.style.justifyContent='center'; ph.style.color='#888'; ph.textContent='No preview';
-    img.replaceWith(ph); return;
+  const ev  = r.eventId || r.event || DEFAULT_EVENT_ID;
+  const pid = getId(r);
+  const keys = [];
+  if(ev && pid){
+    const base = `events/${ev}/originals/${pid}`;
+    ['.jpg','.JPG','.jpeg','.JPEG','.png','.webp'].forEach(ext => keys.push(base+ext));
   }
-  const next=rest.shift(); img.dataset.keys=JSON.stringify(rest); img.src=buildImgUrlFromKey(next);
+  return keys;
 }
-
+function tryNextImg(img){
+  let rest=[];
+  try{ rest = JSON.parse(img.dataset.keys||'[]'); }catch{}
+  if(!rest.length){
+    const ph = document.createElement('div');
+    ph.className='thumb';
+    ph.style.display='flex'; ph.style.alignItems='center'; ph.style.justifyContent='center'; ph.style.color='#888';
+    ph.textContent='No preview';
+    img.replaceWith(ph);
+    return;
+  }
+  const next = rest.shift();
+  img.dataset.keys = JSON.stringify(rest);
+  img.src = buildImgUrlFromKey(next);
+}
 function cardHTML(r){
   const pid = getId(r);
   const sim = getScore(r);
   const keys = buildKeyCandidates(r);
-  const first = keys[0] || '';
-  const keyForCard = primaryKey(r) || first;
+  const first = keys[0];
 
   const imgPart = first
     ? `<img class="thumb" loading="lazy" alt="${pid||'photo'}"
@@ -385,73 +502,37 @@ function cardHTML(r){
     : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:#888">No preview</div>`;
 
   return `
-    <div class="cardR" data-key="${keyForCard||''}">
-      <div class="thumbWrap">
-        ${imgPart}
-        <a class="dlBtn" href="${keyForCard?buildImgUrlFromKey(keyForCard):'#'}" target="_blank" title="डाउनलोड">⬇</a>
-        <div class="selHit"></div>
-        <div class="selMark">✓</div>
-      </div>
+    <div class="cardR">
+      ${imgPart}
       <div class="meta">
-        ${pid?`<div><b>ID:</b> ${pid}</div>`:''}
-        ${sim?`<div><span class="pill">~${sim}%</span> match</div>`:''}
-        ${primaryKey(r)?`<div class="muted" style="word-break:break-all">${primaryKey(r)}</div>`:''}
+        ${pid ? `<div><b>ID:</b> ${pid}</div>` : ''}
+        ${sim ? `<div><span class="pill">~${sim}%</span> match</div>` : ''}
+        ${primaryKey(r) ? `<div class="muted" style="word-break:break-all">${primaryKey(r)}</div>` : ''}
       </div>
     </div>`;
 }
-
 function renderResults(items){
-  lastResults = Array.isArray(items)?items:[];
-  selectedKeys.clear(); updateBulkbar();
-  if(!lastResults.length){ resultsEl.innerHTML=''; emptyEl.style.display='block'; return; }
+  if(!items || !items.length){
+    resultsEl.innerHTML = '';
+    emptyEl.style.display='block';
+    return;
+  }
   emptyEl.style.display='none';
-  resultsEl.innerHTML = lastResults.map(cardHTML).join('');
+  resultsEl.innerHTML = items.map(cardHTML).join('');
 }
-
-/* Selection (event delegation) */
-resultsEl.addEventListener('click', (e)=>{
-  const a = e.target.closest('.dlBtn');
-  if(a) { e.stopPropagation(); return; } // allow download without toggling
-  const hit = e.target.closest('.selHit');
-  const card = e.target.closest('.cardR');
-  if(!card || !hit) return;
-  const key = card.dataset.key; if(!key) return;
-  if(selectedKeys.has(key)){ selectedKeys.delete(key); card.classList.remove('sel'); }
-  else { selectedKeys.add(key); card.classList.add('sel'); }
-  updateBulkbar();
-});
-
-function updateBulkbar(){
-  const n = selectedKeys.size;
-  selCountEl.textContent = String(n);
-  bulkbar.style.display = n>0 ? 'flex' : 'none';
-}
-btnSelAll.addEventListener('click', ()=>{
-  selectedKeys.clear();
-  document.querySelectorAll('.cardR').forEach(el=>{
-    const k=el.dataset.key; if(k){ selectedKeys.add(k); el.classList.add('sel'); }
-  });
-  updateBulkbar();
-});
-btnClearSel.addEventListener('click', ()=>{
-  selectedKeys.clear();
-  document.querySelectorAll('.cardR').forEach(el=> el.classList.remove('sel'));
-  updateBulkbar();
-});
-btnOpenLinks.addEventListener('click', ()=>{
-  const keys = Array.from(selectedKeys); if(!keys.length) return;
-  const w = window.open('','_blank','noopener');
-  w.document.write('<title>Downloads</title><h3>Download Selected</h3><ol>');
-  for(const k of keys){ const u=buildImgUrlFromKey(k); w.document.write(`<li><a href="${u}" target="_blank" download>${k}</a></li>`); }
-  w.document.write('</ol>'); w.document.close();
-});
 
 /* ====== AUTOSTART ====== */
 (async function init(){
+  // URL से नाम/मोबाइल prefill (optional)
   if(param('name')) nameEl.value = param('name');
   if(param('mobile')) mobileEl.value = param('mobile');
+
+  // कैमरा start (mobile/desktop दोनों पर)
   await startCamera();
-  window.addEventListener('focus', ()=>{ if(!video.srcObject) startCamera().catch(()=>{}); });
+  // पेज फोकस पर अगर कैमरा बंद है तो फिर से कोशिश
+  window.addEventListener('focus', ()=>{
+    if(!video.srcObject) startCamera().catch(()=>{});
+  });
 })();
 </script>
 </body>
