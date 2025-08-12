@@ -501,19 +501,22 @@ function buildKeyCandidates(r){
   const ev  = r.eventId || r.event || DEFAULT_EVENT_ID;
   let pid   = getId(r) || r.filename || r.fileName || r.name || '';
 
-  // If id itself looks like a key (has a slash), honor it first
   const keys = [];
-  const push = (k)=>{ if(k && !keys.includes(k)) keys.push(k); };
+  const push = (k) => { if (k && !keys.includes(k)) keys.push(k); };
 
-  if(pid.includes('/')){
-    // If it doesn't start with events/, scope it to events/<eventId>/
+  // If id itself looks like a key (has a slash), honor it first
+  if (pid && pid.includes('/')){
     push(pid.startsWith('events/') ? pid : `events/${ev}/${pid}`);
   }
 
   // Normalize: if pid has extension already, keep it; else try common extensions
   const hasExt = /\.(jpg|jpeg|png|webp)$/i.test(pid);
-  const nameCandidates = hasExt ? [pid] : [pid + '.jpg', pid + '.jpeg', pid + '.png', pid + '.webp',
-                                        pid + '.JPG', pid + '.JPEG', pid + '.PNG', pid + '.WEBP'];
+  const nameCandidates = hasExt
+    ? [pid]
+    : [
+        pid + '.jpg', pid + '.jpeg', pid + '.png', pid + '.webp',
+        pid + '.JPG', pid + '.JPEG', pid + '.PNG', pid + '.WEBP'
+      ];
 
   // Common folder patterns used in S3 structures
   const folders = [
@@ -523,11 +526,11 @@ function buildKeyCandidates(r){
     'images',          // events/<ev>/images/<name>
     'img',             // events/<ev>/img/<name>
     'raw',             // events/<ev>/raw/<name>
-    'ORIGINALS', 'Photos', 'Images' // some people use caps
+    'ORIGINALS', 'Photos', 'Images'
   ];
 
-  for(const f of folders){
-    for(const nm of nameCandidates){
+  for (const f of folders){
+    for (const nm of nameCandidates){
       push(`events/${ev}/${f ? f + '/' : ''}${nm}`);
     }
   }
