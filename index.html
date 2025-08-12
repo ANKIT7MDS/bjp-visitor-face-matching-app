@@ -7,10 +7,9 @@
   <style>
     /*
       ✨ UI + Robustness Patch (frontend-only)
-      - Kept existing HTML/logic; improved error handling for fetch
-      - Added defensive network timeout + richer diagnostics (no uncaught "search error")
-      - Optional debug panel & tests with ?debug=1
-      - CSS-only visual polish preserved
+      - Cleaner professional UI, mobile responsive
+      - Robust error handling (no uncaught "search error")
+      - Debug panel & tests with ?debug=1
     */
 
     :root{
@@ -111,11 +110,10 @@
 
     .hint{color:var(--muted);font-size:.92rem}
     .ok{color:var(--ok);font-weight:700}
+    .warn{color:var(--warn)}
 
     .danger{color:var(--danger-ink);background:color-mix(in srgb, var(--danger-ink) 8%, transparent);
       border:1px solid color-mix(in srgb, var(--danger-ink) 35%, var(--border));padding:12px;border-radius:12px}
-
-    .warn{color:var(--warn)}
 
     details.err{margin-top:6px}
 
@@ -124,7 +122,7 @@
 
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 
-    /* Results grid: responsive, nice cards */
+    /* Results grid */
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
     @media (max-width:560px){.grid{grid-template-columns:1fr}}
 
@@ -139,18 +137,12 @@
       font-size:.8rem;font-weight:700;color:color-mix(in srgb, var(--brand) 90%, black)}
     .stat{margin:10px 0 0 0}
 
-    /* Make header + buttons friendlier on small devices */
     @media (max-width:480px){
       header{padding:12px 14px;font-size:1.02rem}
       .btn{width:100%}
     }
+    @media (prefers-reduced-motion: reduce){ .btn{transition:none} }
 
-    /* Reduce motion if user prefers */
-    @media (prefers-reduced-motion: reduce){
-      .btn{transition:none}
-    }
-
-    /* Nice selection & focus */
     ::selection{background:color-mix(in srgb, var(--brand) 28%, transparent)}
     :focus-visible{outline:3px solid color-mix(in srgb, var(--brand) 28%, transparent);outline-offset:2px}
 
@@ -277,12 +269,16 @@ function stripDataUrl(dataUrl){
 }
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
-// Safe JSON parse available early (prevents temporal usage issues)
+// Safe JSON parse available early
 JSON.parseSafe = (s)=>{ try{return JSON.parse(s);}catch{return {} } };
 
 /* ====== CAMERA ====== */
 async function startCamera(){
   try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      statusMsg('यह ब्राउज़र कैमरा सपोर्ट नहीं करता।', 'warn');
+      return;
+    }
     state.stream?.getTracks()?.forEach(t => t.stop());
     const stream = await navigator.mediaDevices.getUserMedia({
       video:{ facingMode: 'user' },
@@ -292,7 +288,6 @@ async function startCamera(){
     video.srcObject = stream;
     await video.play().catch(()=>{});
   }catch(err){
-    // सिर्फ़ चेतावनी दिखाएँ, फ़ाइल अपलोड fallback रहेगा
     console.warn('camera error', err);
     statusMsg('कैमरा उपलब्ध नहीं। फ़ाइल से भी खोज कर सकते हैं।', 'warn');
   }
@@ -324,7 +319,6 @@ function fileToDataURL(file){
 async function useFile(file){
   try{
     const dataUrl = await fileToDataURL(file);
-    // draw on canvas to normalize format (and allow retake button to hide video)
     const img = new Image();
     await new Promise((res,rej)=>{
       img.onload=res; img.onerror=rej; img.src=dataUrl;
@@ -338,7 +332,7 @@ async function useFile(file){
     state.imgBytes = Math.round((state.imageBase64.length * 3)/4);
     canvas.style.display='block';
     video.style.display='none';
-    selfieStatus.textContent = 'सेल्फ़ी तैयार ✓';
+    selfieStatus.textContent = 'سےल्फ़ी तैयार ✓';
   }catch(err){
     showErr('फ़ाइल पढ़ने में समस्या', err);
   }
@@ -396,13 +390,11 @@ async function fetchSmart(url, opt={}, timeoutMs=20000){
         data = await resp.text();
       }
     }catch(parseErr){
-      // Return raw text or parse error instead of throwing
       data = 'JSON parse error';
     }
     return { ok: resp.ok, status: resp.status, data };
   }catch(err){
     clearTimeout(id);
-    // Never throw; return a structured failure so callers don't hit catch
     const reason = (err && (err.name==='AbortError' || err === 'timeout'))
       ? 'Request timed out'
       : (err && err.message) ? err.message : String(err);
@@ -418,9 +410,7 @@ async function doSearch(){
   if(!nm){ showMsg('कृपया नाम भरें।'); return; }
   if(!validMobile(mb)){ showMsg('कृपया 10 अंकों का मोबाइल भरें।'); return; }
 
-  // prepare image
   if(!state.imageBase64){
-    // if video running, take a shot
     if(video.srcObject){ snapshot(); canvas.style.display='block'; video.style.display='none'; }
   }
   if(!state.imageBase64){
@@ -438,14 +428,13 @@ async function doSearch(){
     sim: DEFAULT_SIM
   };
 
-  const r = await fetchSmart(API_BASE + '/search', {
+  const r = await fetchSmart(API_BASE.replace(/\/$/,'') + '/search', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify(body)
   });
 
   if(!r.ok){
-    // Rich diagnostics shown to user, no unhandled exceptions
     const hint = r.status === 0
       ? 'नेटवर्क/CORS/टाइमआउट—URL, इंटरनेट या सर्वर CORS जाँचे।'
       : `HTTP ${r.status}`;
@@ -490,21 +479,50 @@ function primaryKey(r){
   return r.s3Key || r.key || r.s3key || r.path || r.urlKey || '';
 }
 function buildImgUrlFromKey(key){ 
-  return API_BASE + '/download?key=' + encodeURIComponent(key); 
+  return API_BASE.replace(/\/$/,'') + '/download?key=' + encodeURIComponent(key); 
 }
+
+// UPDATED: cover originals/, root, photos/, images/, img/, raw/ + caps
 function buildKeyCandidates(r){
   const prim = primaryKey(r);
   if (prim) return [prim];
 
   const ev  = r.eventId || r.event || DEFAULT_EVENT_ID;
-  const pid = getId(r);
+  let pid   = getId(r) || r.filename || r.fileName || r.name || '';
+
   const keys = [];
-  if(ev && pid){
-    const base = `events/${ev}/originals/${pid}`;
-    ['.jpg','.JPG','.jpeg','.JPEG','.png','.webp'].forEach(ext => keys.push(base+ext));
+  const push = (k)=>{ if(k && !keys.includes(k)) keys.push(k); };
+
+  if (pid && pid.includes('/')){
+    push(pid.startsWith('events/') ? pid : `events/${ev}/${pid}`);
+  }
+
+  const hasExt = /\.(jpg|jpeg|png|webp)$/i.test(pid);
+  const nameCandidates = hasExt
+    ? [pid]
+    : [
+        pid + '.jpg', pid + '.jpeg', pid + '.png', pid + '.webp',
+        pid + '.JPG', pid + '.JPEG', pid + '.PNG', pid + '.WEBP'
+      ];
+
+  const folders = [
+    'originals',
+    '',            // root under event
+    'photos',
+    'images',
+    'img',
+    'raw',
+    'ORIGINALS','Photos','Images'
+  ];
+
+  for(const f of folders){
+    for(const nm of nameCandidates){
+      push(`events/${ev}/${f ? f + '/' : ''}${nm}`);
+    }
   }
   return keys;
 }
+
 function tryNextImg(img){
   let rest=[];
   try{ rest = JSON.parse(img.dataset.keys||'[]'); }catch{}
@@ -520,6 +538,7 @@ function tryNextImg(img){
   img.dataset.keys = JSON.stringify(rest);
   img.src = buildImgUrlFromKey(next);
 }
+
 function cardHTML(r){
   const pid = getId(r);
   const sim = getScore(r);
@@ -560,33 +579,29 @@ async function runTests(){
   debugWrap.classList.add('active');
   resetTests();
   logTest('▶ Running frontend self-tests...');
-  // 1) JSON.parseSafe
   try{
     const obj = JSON.parseSafe('{"a":1}');
-    console.assert(obj.a===1,'JSON.parseSafe should parse valid JSON');
+    console.assert(obj.a===1,'JSON.parseSafe ok');
     const bad = JSON.parseSafe('{bad json');
-    console.assert(typeof bad==='object','JSON.parseSafe should return object on invalid');
+    console.assert(typeof bad==='object','JSON.parseSafe invalid ok');
     logTest('✓ JSON.parseSafe tests passed');
   }catch(e){ logTest('✗ JSON.parseSafe failed: '+ e); }
 
-  // 2) fetchSmart should not throw on network/CORS errors
   try{
     const r = await fetchSmart('https://example.invalid/abc', { method:'GET' }, 2000);
-    console.assert(r.ok===false && r.status===0, 'fetchSmart should return ok=false for network error');
+    console.assert(r.ok===false && r.status===0, 'network error handled');
     logTest('✓ fetchSmart network failure handled');
-  }catch(e){ logTest('✗ fetchSmart threw unexpectedly: ' + e); }
+  }catch(e){ logTest('✗ fetchSmart threw: ' + e); }
 
-  // 3) fetchSmart should return status for non-200
   try{
     const r2 = await fetchSmart((API_BASE||'').replace(/\/$/,'') + '/__not_found__', { method:'GET' }, 5000);
-    console.assert(r2.ok===false && (r2.status===404 || r2.status===403 || r2.status===0), 'Expect non-OK status or 0');
+    console.assert(r2.ok===false && (r2.status===404 || r2.status===403 || r2.status===0), 'non-OK handled');
     logTest('✓ fetchSmart non-OK status handled');
-  }catch(e){ logTest('✗ fetchSmart non-OK case threw: ' + e); }
+  }catch(e){ logTest('✗ fetchSmart non-OK threw: ' + e); }
 
-  // 4) buildKeyCandidates fallback
   try{
     const ks = buildKeyCandidates({ id:'123', eventId:'ev1' });
-    console.assert(Array.isArray(ks) && ks.length>=1, 'Key candidates should be built');
+    console.assert(Array.isArray(ks) && ks.length>=1, 'key candidates built');
     logTest('✓ buildKeyCandidates test passed');
   }catch(e){ logTest('✗ buildKeyCandidates failed: ' + e); }
 
@@ -595,13 +610,11 @@ async function runTests(){
 
 /* ====== AUTOSTART ====== */
 (async function init(){
-  // URL से नाम/मोबाइल prefill (optional)
   if(param('name')) nameEl.value = param('name');
   if(param('mobile')) mobileEl.value = param('mobile');
 
-  // कैमरा start (mobile/desktop दोनों पर)
   await startCamera();
-  // पेज फोकस पर अगर कैमरा बंद है तो फिर से कोशिश
+
   window.addEventListener('focus', ()=>{
     if(!video.srcObject) startCamera().catch(()=>{});
   });
