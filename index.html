@@ -19,7 +19,7 @@
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--brand);color:var(--brand-ink);border:0;border-radius:12px;padding:13px 18px;font-weight:800;cursor:pointer;box-shadow:var(--shadow)}
     .btn.gray{background:#5a5f69;color:#fff} .btn[disabled]{opacity:.6;cursor:not-allowed}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-    .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f3f3f3;border-radius:12px;border:1px solid var(--border);image-orientation: from-image;}
+    .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f3f3f3;border-radius:12px;border:1px solid var(--border)}
     .meta{font-size:.92rem;color:#68707a;margin-top:8px}
     .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#ffe4ce;color:#b35500;font-weight:700;font-size:.8rem}
     .ok{color:var(--ok);font-weight:700}
@@ -90,9 +90,8 @@
 <script>
 // ===== CONFIG =====
 const API_BASE = 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
-const DEFAULT_SIM = 70;          // backend sim threshold
-const UI_PAGE_SIZE  = 10;        // UI में एक बार में 10 कार्ड
-const BACKEND_LIMIT = 50;        // एक API कॉल में 50 रिज़ल्ट मांगेंगे
+const DEFAULT_SIM = 70;
+const PAGE_SIZE  = 10;
 
 // ===== DOM =====
 const $ = s => document.querySelector(s);
@@ -103,7 +102,7 @@ const resultsEl=$('#results'), emptyEl=$('#empty'), foundEl=$('#found'), seeMore
 const errBox=$('#errBox'), errText=$('#errText'), statusEl=$('#status');
 
 // ===== STATE =====
-const state={ stream:null, imageBase64:'', imgBytes:0, lastFileName:'', items:[], total:null, nextToken:null, page:0, loading:false };
+const state={ stream:null, imageBase64:'', imgBytes:0, lastFileName:'', allItems:[], page:0 };
 
 // ===== HELPERS =====
 function stripDataUrl(u){ const i=u.indexOf(','); return i>-1?u.slice(i+1):u; }
@@ -114,27 +113,6 @@ function getId(r){ return r.photoId || r.id || r.imageId || r.photoID || ''; }
 function getScore(r){ const v=r.similarity ?? r.score ?? r.confidence ?? 0; return Math.round(v*100)/100; }
 function evFrom(r){ if(r.eventId) return r.eventId; if(r.s3Key && r.s3Key.startsWith('events/')) return r.s3Key.split('/')[1]; return ''; }
 function primaryKey(r){ return r.s3Key || r.key || r.s3key || r.path || r.urlKey || ''; }
-
-// मजबूत de-dupe (copy suffix/ random hash हटाना)
-function normalizeId(s='') {
-  s = s.toLowerCase();
-  s = s.replace(/(?:-copy-\d+|\(\d+\)|_copy(?:_\d+)?)/g, '');
-  const m = s.match(/^(fb_img_\d{10,})/); if (m) return m[1];
-  s = s.replace(/(\d{8}_\d{6})_[a-z0-9]{6,}$/,'$1');
-  s = s.replace(/(__|_)[a-z0-9]{6,}(?=\.|$)/g,'$1');
-  return s;
-}
-function dedupe(list) {
-  const map = new Map();
-  for (const it of (list||[])) {
-    const pk  = (primaryKey(it) || '').toString();
-    const pid = (getId(it) || '').toString();
-    const ev  = (evFrom(it) || '').toString();
-    const canon = (pk && normalizeId(pk)) || (pid && (ev + '|' + normalizeId(pid))) || pk || (ev + '|' + pid);
-    if (canon && !map.has(canon)) map.set(canon, it);
-  }
-  return [...map.values()];
-}
 
 // ===== CAMERA =====
 async function startCamera(){
@@ -174,54 +152,79 @@ seeMoreBtn.addEventListener('click', e=>{ e.preventDefault(); renderNextPage(); 
 // ===== NET =====
 async function fetchJSON(url,opt={}){ const r=await fetch(url,opt); const ct=(r.headers.get('content-type')||'').toLowerCase(); const d=ct.includes('json')? await r.json(): await r.text(); if(!r.ok) throw new Error(typeof d==='string'?d:JSON.stringify(d)); return d; }
 
-async function searchPage(cursor){
-  const evObj=parseEventInput(eventEl.value);
-  const body={ ...evObj, imageBase64:state.imageBase64, name:(nameEl.value||'').trim(), mobile:(mobileEl.value||'').trim(), sim:DEFAULT_SIM, limit:BACKEND_LIMIT };
-  if(cursor) body.cursor = cursor;
-  const data=await fetchJSON(API_BASE+'/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const items = data?.items || data?.results || data?.matches || [];
-  return { items, nextToken: data?.nextToken || null, total: data?.total ?? null };
-}
+// ===== SEARCH =====
+function dedupe(list){ const map=new Map(); for(const it of (list||[])){ const k=(primaryKey(it) || (evFrom(it)+'|'+getId(it))).toLowerCase(); if(k && !map.has(k)) map.set(k,it); } return [...map.values()]; }
 
-// ===== SEARCH FLOW =====
 async function doSearch(){
-  if(state.loading) return; errBox.open=false; errText.textContent='';
+  errBox.open=false; errText.textContent='';
   const nm=(nameEl.value||'').trim(); const mb=(mobileEl.value||'').trim(); if(!nm) return statusMsg('कृपया नाम भरें।','err'); if(!validMobile(mb)) return statusMsg('कृपया 10 अंकों का मोबाइल भरें।','err');
   if(!state.imageBase64){ if(video.srcObject){ snapshot(); } }
   if(!state.imageBase64) return statusMsg('कृपया सेल्फ़ी लें या फ़ाइल चुनें।','err');
 
-  state.loading=true; btnSearch.disabled=true; resultsEl.innerHTML=''; emptyEl.style.display='none'; seeMoreBtn.style.display='none';
-  state.items=[]; state.total=null; state.nextToken=null; state.page=0;
-  statusMsg('खोज जारी है…');
+  btnSearch.disabled=true; statusMsg('खोज जारी है…');
+  const evObj=parseEventInput(eventEl.value);
+  const body={ ...evObj, imageBase64:state.imageBase64, name:nm, mobile:mb, sim:DEFAULT_SIM };
   try{
-    const {items, nextToken, total} = await searchPage(null);
-    state.items = dedupe(items);
-    state.total = total; state.nextToken = nextToken; state.page=0;
-    foundEl.style.display='block';
-    foundEl.textContent = (typeof total==='number') ? `मिले ${state.items.length}/${total} फोटो।` : `मिले ${state.items.length} फोटो।`;
+    const data=await fetchJSON(API_BASE+'/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const raw=data?.items || data?.results || data?.matches || [];
+    state.allItems = dedupe(raw); state.page=0;
+    foundEl.style.display='block'; foundEl.textContent=`मिले ${state.allItems.length} फोटो।`;
+    resultsEl.innerHTML=''; emptyEl.style.display= state.allItems.length? 'none':'block';
     renderNextPage(true);
     statusMsg('');
   }catch(err){ statusMsg('सर्वर में दिक्कत: '+err.message,'err'); errText.textContent=err.stack||String(err); errBox.open=true; }
-  finally{ state.loading=false; btnSearch.disabled=false; }
+  finally{ btnSearch.disabled=false; }
 }
 
 // ===== THUMB + DOWNLOAD FALLBACK =====
 async function presign(key){ const d=await fetchJSON(API_BASE+'/download?key='+encodeURIComponent(key)); if(d&&/^https?:\/\//i.test(d.url)) return d.url; throw new Error('presign failed'); }
-function buildKeyCandidates(r){
-  const pid=getId(r); const ev=evFrom(r); const keys=[]; const prim=primaryKey(r); if(prim) keys.push(prim);
-  if(ev && pid){
-    const exts=['.jpg','.jpeg','.png','.webp','.JPG','.JPEG'];
-    const bases=[`events/${ev}/`,`events/${ev}/originals/`,`events/${ev}/raw/`,`events/${ev}/uploads/`,`images/${ev}/`];
-    for(const base of bases){ for(const ext of exts){ keys.push(`${base}${pid}${ext}`); } }
-  }
-  return keys.filter(Boolean);
-}
+function buildKeyCandidates(r){ const pid=getId(r); const ev=evFrom(r); const keys=[]; const prim=primaryKey(r); if(prim) keys.push(prim); if(ev && pid){ ['','.jpg','.jpeg','.png','.webp','.JPG','.JPEG'].forEach(ext=>{ if(ext) keys.push(`events/${ev}/${pid}${ext}`); }); ['','.jpg','.jpeg','.png','.webp','.JPG','.JPEG'].forEach(ext=>{ if(ext) keys.push(`events/${ev}/originals/${pid}${ext}`); }); } return keys.filter(Boolean); }
 function pLimit(n){ let running=0; const q=[]; const run=()=>{ if(!q.length||running>=n) return; const {fn,ok,fail}=q.shift(); running++; fn().then(ok,fail).finally(()=>{ running--; run(); }); }; return fn=>new Promise((res,rej)=>{ q.push({fn,ok:res,fail:rej}); run(); }); }
 const limit = pLimit(6);
-async function loadFromKeys(img, keys){ for(const key of keys){ try{ const url=await presign(key); img.src=url; img.dataset.loaded='1'; return; }catch(e){} } img.replaceWith(makeNoPreview()); }
+async function loadFromKeys(img, keys){
+  // unique, defined only
+  const uniq=[...new Set((keys||[]).filter(Boolean))];
+  for(const key of uniq){
+    try{
+      const url=await presign(key);
+      // stop any further error recursion for this img
+      img.onerror=null;
+      img.src=url;
+      img.dataset.loaded='1';
+      return;
+    }catch(e){}
+  }
+  img.onerror=null;
+  img.replaceWith(makeNoPreview());
+}catch(e){} } img.replaceWith(makeNoPreview()); }
 function thumbUrlForKey(key,w=512){ return `${API_BASE}/thumb?key=${encodeURIComponent(key)}&w=${w}&orient=1`; }
 function makeNoPreview(){ const ph=document.createElement('div'); ph.className='thumb'; ph.style.display='flex'; ph.style.alignItems='center'; ph.style.justifyContent='center'; ph.style.color='#888'; ph.textContent='No preview'; return ph; }
-function hydrateThumbs(container){ const imgs=(container||resultsEl).querySelectorAll('img[data-first]'); imgs.forEach(img=>{ const first=decodeURIComponent(img.dataset.first||''); const rest=JSON.parse(img.dataset.keys||'[]'); img.onerror=()=>{ limit(()=>loadFromKeys(img,[first,...rest])); }; img.src = thumbUrlForKey(first); }); }
+function hydrateThumbs(container){
+  const imgs=(container||resultsEl).querySelectorAll('img[data-first]');
+  imgs.forEach(img=>{
+    // prevent re-hydration + re-trying loop
+    if (img.dataset.hydrated) return;
+    img.dataset.hydrated='1';
+
+    const first=decodeURIComponent(img.dataset.first||'');
+    const rest=JSON.parse(img.dataset.keys||'[]');
+    let triedFallback=false;
+
+    const giveUp=()=>{ img.onerror=null; img.replaceWith(makeNoPreview()); };
+
+    // try /thumb once, if it errors, try presigned download only once
+    const onErr=()=>{
+      if (triedFallback){ giveUp(); return; }
+      triedFallback=true;
+      // if presigned also errors, giveUp handler will run
+      img.onerror=giveUp;
+      limit(()=>loadFromKeys(img,[first,...rest]));
+    };
+
+    img.addEventListener('error', onErr, { once:true });
+    img.src = thumbUrlForKey(first);
+  });
+}
 
 // ===== RENDER =====
 function cardHTML(r){
@@ -240,38 +243,15 @@ function cardHTML(r){
   </div>`;
 }
 
-async function maybeFetchMore(){
-  if(state.nextToken && state.items.length - (state.page*UI_PAGE_SIZE) <= 0){
-    try{
-      const {items, nextToken, total} = await searchPage(state.nextToken);
-      const before = state.items.length;
-      state.items = dedupe(state.items.concat(items));
-      state.nextToken = nextToken || null;
-      if(typeof total==='number') state.total = total;
-      if(typeof state.total==='number'){
-        foundEl.textContent = `मिले ${state.items.length}/${state.total} फोटो।`;
-      }else{
-        foundEl.textContent = `मिले ${state.items.length} फोटो।`;
-      }
-      // अगर कोई नया आइटम नहीं आया और nextToken खत्म, तो बस लौटो
-      if(state.items.length === before && !state.nextToken){ /*no-op*/ }
-    }catch(err){ console.warn('next page error', err); }
-  }
-}
-
 function renderNextPage(reset){
   if(reset){ resultsEl.innerHTML=''; state.page=0; }
-  const start=state.page*UI_PAGE_SIZE; const slice=state.items.slice(start, start+UI_PAGE_SIZE);
-  if(!slice.length){ seeMoreBtn.style.display = state.nextToken? 'inline-flex':'none'; return; }
+  const start=state.page*PAGE_SIZE; const slice=state.allItems.slice(start, start+PAGE_SIZE);
+  if(!slice.length){ seeMoreBtn.style.display='none'; return; }
   const html=slice.map(cardHTML).join('');
   const frag=document.createElement('div'); frag.innerHTML=html; [...frag.children].forEach(n=>resultsEl.appendChild(n));
   hydrateThumbs(resultsEl);
   state.page++;
-  const hasMoreLocal = state.page*UI_PAGE_SIZE < state.items.length;
-  seeMoreBtn.style.display = (hasMoreLocal || state.nextToken)? 'inline-flex':'none';
-  if(!hasMoreLocal && state.nextToken){ // local खत्म, सर्वर से next पेज उठा लें
-    maybeFetchMore();
-  }
+  seeMoreBtn.style.display = (state.page*PAGE_SIZE < state.allItems.length)? 'inline-flex':'none';
 }
 
 // ===== INIT =====
