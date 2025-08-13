@@ -3,320 +3,333 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WedMatch – Face Search</title>
+  <title>Face Match Search</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans,'Apple Color Emoji','Segoe UI Emoji';margin:0;background:#fafafa;color:#222}
-    header{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;padding:10px 14px;z-index:10}
-    main{display:grid;grid-template-columns:420px 1fr;gap:18px;max-width:1300px;margin:16px auto;padding:0 14px}
-    .card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-    .card h3{margin:0;padding:12px 14px;border-bottom:1px solid #f0f0f0}
-    .card .content{padding:12px 14px}
-    label{display:block;font-size:12px;color:#555;margin:8px 0 6px}
-    input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;font-size:14px}
+    :root{
+      --fg:#0f172a;--muted:#64748b;--muted2:#94a3b8;--bg:#f8fafc;--card:#ffffff;--accent:#2563eb
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif}
+    header{position:sticky;top:0;z-index:3;background:#fff;border-bottom:1px solid #e5e7eb}
+    header .wrap{max-width:1100px;margin:auto;padding:12px 16px;display:flex;gap:12px;align-items:center}
+    .brand{font-weight:700}
+
+    main{max-width:1100px;margin:16px auto;padding:0 16px;display:grid;grid-template-columns:360px 1fr;gap:16px}
+    @media (max-width:980px){main{grid-template-columns:1fr}}
+
+    .panel{background:var(--card);border:1px solid #e5e7eb;border-radius:12px}
+    .panel h3{margin:0;padding:14px 16px;border-bottom:1px solid #e5e7eb}
+    .panel .body{padding:14px 16px}
+
+    label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
+    input[type=text], input[type=tel]{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px}
+
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .btn{appearance:none;border:0;outline:0;background:#0b5fff;color:#fff;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:600}
-    .btn.secondary{background:#f3f4f6;color:#111;border:1px solid #e5e7eb}
-    .hint{font-size:12px;color:#666}
-    video,canvas,.snap{width:100%;border-radius:12px;background:#000}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-    .result{border:1px solid #eee;border-radius:12px;overflow:hidden;background:#fff}
-    .result .meta{padding:8px 10px;border-top:1px solid #f2f2f2}
-    .pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:#f5f5f5}
-    .toolbar{display:flex;gap:8px;align-items:center;margin-top:8px}
-    .thumb{display:block;width:100%;height:240px;object-fit:cover;background:#f6f7f8}
-    .footer-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
-    .muted{color:#777}
+
+    .btn{appearance:none;background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn.secondary{background:#111827}
+    .btn.ghost{background:#fff;color:#111827;border:1px solid #e5e7eb}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+
+    .help{color:var(--muted);font-size:13px}
+    .debug{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:12px;background:#0b1220;color:#b6cffb;border-radius:10px;padding:10px;white-space:pre-wrap}
+
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px}
+    @media(min-width:780px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(min-width:1080px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+    .card{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff}
+    .thumb-wrap{position:relative;background:#f1f5f9;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+    .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .no-prev{color:#98a2b3}
+    .chip{display:inline-block;margin:8px 8px 0 8px;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#0f172a;font-size:12px}
+    .meta{padding:8px 10px 12px;color:#334155;font-size:13px}
+    .open-link{position:absolute;right:8px;bottom:8px;background:rgba(255,255,255,.9);border:1px solid #e5e7eb;border-radius:8px;padding:2px 6px;font-size:11px;color:#111827;text-decoration:none}
+
+    .rowbtn{display:flex;gap:8px;align-items:center}
+    .footer-actions{padding:8px 12px;border-top:1px solid #e5e7eb;background:#fafafa}
   </style>
 </head>
 <body>
-<header>
-  <strong>WedMatch</strong>
-</header>
+  <header><div class="wrap"><div class="brand">Face Match</div><div id="status" class="help"></div></div></header>
 
-<main>
-  <!-- Left: controls -->
-  <section class="card">
-    <h3>खोज</h3>
-    <div class="content">
-      <div class="row">
-        <div>
-          <label>नाम (optional)</label>
-          <input id="name" type="text" placeholder="जैसे: रोहित" />
+  <main>
+    <!-- ========= LEFT: Search form ========= -->
+    <section class="panel">
+      <h3>खोज</h3>
+      <div class="body">
+        <div class="row">
+          <div>
+            <label>नाम (वैकल्पिक)</label>
+            <input id="name" type="text" placeholder="नाम"/>
+          </div>
+          <div>
+            <label>मोबाइल (वैकल्पिक)</label>
+            <input id="phone" type="tel" placeholder="मोबाइल"/>
+          </div>
         </div>
-        <div>
-          <label>मोबाइल (optional)</label>
-          <input id="phone" type="text" placeholder="जैसे: 98930…" />
+
+        <label>Event IDs (कॉमा से अलग)</label>
+        <input id="eventIds" type="text" placeholder="EVT_2025_08_12, demo-2025-01"/>
+        <div class="help">खाली छोड़ सकते हैं।</div>
+
+        <label>सेल्फी कैमरा</label>
+        <div id="camBox" style="border:1px dashed #e5e7eb;border-radius:12px;padding:10px;display:grid;gap:8px">
+          <video id="video" autoplay playsinline muted style="width:100%;border-radius:10px;background:#000;max-height:260px"></video>
+          <div class="rowbtn">
+            <button id="btnOpenCam" class="btn ghost">कैमरा चालू</button>
+            <button id="btnTake" class="btn secondary" disabled>सेल्फी लें</button>
+            <input id="file" type="file" accept="image/*" style="display:none"/>
+            <button id="btnPick" class="btn ghost">गैलरी से</button>
+          </div>
+          <canvas id="canvas" style="display:none"></canvas>
+          <div class="help">PNG/WebP → JPEG auto. मोबाइल पर कैमरा/गैलरी दोनों चलेगा।</div>
+        </div>
+
+        <div class="rowbtn" style="margin-top:12px">
+          <button id="btnSearch" class="btn">Search</button>
+          <button id="btnReset" class="btn ghost">Reset</button>
         </div>
       </div>
-
-      <label>Event IDs (comma-separated, optional)</label>
-      <input id="eventIds" type="text" placeholder="EVT_2025_08_12, demo-2025-01" />
-
-      <div style="margin-top:10px"></div>
-      <label>सेल्फ़ी कैमरा</label>
-      <video id="video" autoplay playsinline muted class="snap"></video>
-      <div class="toolbar">
-        <button class="btn secondary" id="btnCam">कैमरा चालू करें</button>
-        <span id="camState" class="hint">—</span>
-      </div>
-
-      <div style="margin-top:10px"></div>
-      <label>या फ़ाइल चुनें</label>
-      <input id="file" type="file" accept="image/*" />
-      <div class="hint">PNG/JPEG/WebP चलेंगे — मोबाइल पर कैमरा easiest है।</div>
-
       <div class="footer-actions">
-        <button id="btnSearch" class="btn">Search</button>
+        <div id="err" class="help" style="color:#b91c1c"></div>
       </div>
+    </section>
 
-      <div class="hint" id="dbg"></div>
-    </div>
-  </section>
-
-  <!-- Right: results -->
-  <section class="card">
-    <h3>परिणाम</h3>
-    <div class="content">
-      <div id="status" class="muted">Ready.</div>
-      <div id="results" class="grid" style="margin-top:10px"></div>
+    <!-- ========= RIGHT: Results ========= -->
+    <section class="panel" id="resultsPanel">
+      <h3>परिणाम</h3>
+      <div class="body">
+        <div id="summary" class="help">अभी तक कोई खोज नहीं।</div>
+      </div>
+      <div id="grid" class="grid"></div>
       <div class="footer-actions">
-        <button id="btnMore" class="btn secondary" style="display:none">और दिखाएँ</button>
+        <button id="btnMore" class="btn ghost" style="display:none">और दिखाएँ</button>
       </div>
-    </div>
-  </section>
-</main>
+    </section>
+  </main>
 
 <script>
-// ====== 🔧 CONFIG – अपने API Gateway का base URL यहाँ दें ======
+// ================== CONFIG ==================
 const API_BASE = 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
-const ENDPOINTS = {
-  search: API_BASE + '/search',
-  thumb:  API_BASE + '/thumb',
-  download: API_BASE + '/download'
-};
-// =============================================================
 
+// ================== camera / input helpers ==================
 const els = {
+  video: document.getElementById('video'),
+  canvas: document.getElementById('canvas'),
+  btnOpenCam: document.getElementById('btnOpenCam'),
+  btnTake: document.getElementById('btnTake'),
+  btnPick: document.getElementById('btnPick'),
+  file: document.getElementById('file'),
+  btnSearch: document.getElementById('btnSearch'),
+  btnReset: document.getElementById('btnReset'),
   name: document.getElementById('name'),
   phone: document.getElementById('phone'),
   eventIds: document.getElementById('eventIds'),
-  video: document.getElementById('video'),
-  camBtn: document.getElementById('btnCam'),
-  camState: document.getElementById('camState'),
-  file: document.getElementById('file'),
-  search: document.getElementById('btnSearch'),
-  results: document.getElementById('results'),
-  status: document.getElementById('status'),
+  grid: document.getElementById('grid'),
+  summary: document.getElementById('summary'),
   more: document.getElementById('btnMore'),
-  dbg: document.getElementById('dbg')
+  status: document.getElementById('status'),
+  err: document.getElementById('err')
 };
 
-let mediaStream = null;
-let nextToken = null;
-let lastPayload = null;
+let lastImageB64 = null; // data:image/jpeg;base64,...
+let nextToken = null;    // pagination
+let lastRequest = null;  // remember last payload so we can load more
 
-// ---------- Camera ----------
-async function startCamera(){
-  try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'user'}});
-    els.video.srcObject = mediaStream;
-    els.camState.textContent = 'camera started';
-  } catch (err){
-    console.error(err);
-    els.camState.textContent = 'कैमरा नहीं खुला: ' + err.message;
+function setBusy(b){
+  els.btnSearch.disabled = b;
+  els.more.disabled = b;
+  els.status.textContent = b ? 'Loading…' : '';
+}
+
+async function openCamera(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+    els.video.srcObject = stream;
+    els.btnTake.disabled = false;
+    console.log('camera started');
+  }catch(e){
+    console.warn('camera error', e);
+    els.err.textContent = 'कैमरा की अनुमति नहीं मिली। गैलरी से फोटो चुनें।';
   }
 }
 
-function stopCamera(){
-  if (mediaStream){
-    mediaStream.getTracks().forEach(t => t.stop());
-    mediaStream = null;
-    els.camState.textContent = 'camera stopped';
-  }
-}
-
-function captureFromVideo(){
-  if (!mediaStream) return null;
-  const v = els.video;
-  const w = v.videoWidth || 640;
-  const h = v.videoHeight || 640;
-  const maxSide = 1280;
-  const scale = Math.min(1, maxSide/Math.max(w,h));
+function captureToJpeg(video){
+  const w = video.videoWidth || 640;
+  const h = video.videoHeight || 480;
+  const maxW = 720; // resize a bit
+  const scale = Math.min(1, maxW / w);
   const cw = Math.round(w*scale), ch = Math.round(h*scale);
-  const c = document.createElement('canvas');
-  c.width = cw; c.height = ch;
-  const ctx = c.getContext('2d');
-  ctx.drawImage(v, 0, 0, cw, ch);
-  // JPEG keeps size small + EXIF ignored (thumbnail lambda can rotate)
-  return c.toDataURL('image/jpeg', 0.9);
+  els.canvas.width = cw; els.canvas.height = ch;
+  const ctx = els.canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, cw, ch);
+  return els.canvas.toDataURL('image/jpeg', 0.9);
 }
 
-// ---------- File helpers ----------
-function readAsDataURL(file){
-  return new Promise((res, rej)=>{
-    const fr = new FileReader();
-    fr.onerror = rej;
-    fr.onload = ()=> res(fr.result);
-    fr.readAsDataURL(file);
+function fileToJpegB64(file){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    const rdr = new FileReader();
+    rdr.onload = () => { img.src = rdr.result; };
+    rdr.onerror = reject;
+    img.onload = () => {
+      const maxW = 720;
+      const scale = Math.min(1, maxW / img.width);
+      const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+      els.canvas.width = w; els.canvas.height = h;
+      const ctx = els.canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(els.canvas.toDataURL('image/jpeg', 0.9));
+    };
+    img.onerror = reject;
+    rdr.readAsDataURL(file);
   });
 }
 
-async function dataURLFromFile(file){
-  const raw = await readAsDataURL(file);
-  // Downscale big images for network friendliness
-  return await downscaleIfNeeded(raw);
-}
-
-async function downscaleIfNeeded(dataUrl){
-  try {
-    const img = new Image();
-    img.src = dataUrl;
-    await img.decode();
-    const w = img.naturalWidth, h = img.naturalHeight;
-    const MAX = 1280;
-    if (Math.max(w,h) <= MAX) return dataUrl; // fine
-    const scale = MAX/Math.max(w,h);
-    const cw = Math.round(w*scale), ch = Math.round(h*scale);
-    const c = document.createElement('canvas');
-    c.width = cw; c.height = ch;
-    const ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0, cw, ch);
-    return c.toDataURL('image/jpeg', 0.9);
-  } catch(e){
-    console.warn('downscale skip', e);
-    return dataUrl;
+// ================== API helpers ==================
+async function fetchJSON(url, opts){
+  const res = await fetch(url, Object.assign({
+    headers: { 'Content-Type':'application/json' }
+  }, opts));
+  const txt = await res.text();
+  let data = null; try{ data = txt ? JSON.parse(txt) : null; }catch{}
+  if(!res.ok){
+    throw new Error('HTTP '+res.status+': '+txt);
   }
+  return data;
 }
 
-// ---------- Thumb helpers (encode + fallback) ----------
-function thumbUrl(key, w = 360, orient = 1){
-  return `${ENDPOINTS.thumb}?key=${encodeURIComponent(key)}&w=${w}&orient=${orient}`;
+// ================== Thumbnail multi-base fallback ==================
+function unique(list){ return [...new Set(list)]; }
+function stageVariants(base){
+  try{
+    const u = new URL(base);
+    const parts = u.pathname.split('/').filter(Boolean);
+    const stage = parts[0] || '';
+    const origin = u.origin;
+    return unique([
+      `${origin}/${stage}`,
+      `${origin}/PROD2`,
+      `${origin}/PROD`,
+      `${origin}`
+    ]);
+  }catch(e){ return [base]; }
+}
+function buildTryUrlsForKey(key, w=360){
+  const k = encodeURIComponent(key);
+  const bases = stageVariants(API_BASE);
+  const urls = [];
+  for(const b of bases){ urls.push(`${b}/thumb?key=${k}&w=${w}&orient=1`); }
+  for(const b of bases){ urls.push(`${b}/download?key=${k}&disposition=inline`); }
+  return urls;
+}
+const NO_PREVIEW_SVG = 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360"><rect width="100%" height="100%" fill="#eee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#98a2b3" font-family="system-ui,Segoe UI,Arial" font-size="20">No preview</text></svg>`);
+function attachCascadingImage(img, urls){
+  let i = 0;
+  function next(){
+    if(i>=urls.length){ img.src = NO_PREVIEW_SVG; img.onerror = null; return; }
+    img.onerror = next; img.src = urls[i++];
+  }
+  next();
 }
 
-function buildImgForKey(key, w = 360){
-  const img = new Image();
+// ================== Render ==================
+function scoreToPct(raw){ // raw can be 0..1 or 0..100
+  const pct = raw>1 ? raw : raw*100;
+  return Math.round(pct*10)/10;
+}
+
+function addCard(it){
+  const key = it.key || it.s3Key || it.photoKey || it.objectKey || it.photoId || it.id;
+  const pct = scoreToPct(it.score ?? it.confidence ?? 0);
+
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'thumb-wrap';
+
+  const img = document.createElement('img');
   img.className = 'thumb';
   img.alt = key || 'photo';
-  img.referrerPolicy = 'no-referrer';
-  img.decoding = 'async';
-  img.loading = 'lazy';
+  attachCascadingImage(img, buildTryUrlsForKey(key, 360));
 
-  // 1st try: thumbnail
-  img.src = thumbUrl(key, w, 1);
+  const open = document.createElement('a');
+  open.className = 'open-link';
+  open.textContent = 'open';
+  open.href = buildTryUrlsForKey(key, 720)[0];
+  open.target = '_blank'; open.rel='noopener';
 
-  // fallback chain: /download -> SVG placeholder
-  img.onerror = () => {
-    img.onerror = () => {
-      img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${Math.round(w*0.75)}">
-`+
-        `<rect width="100%" height="100%" fill="#f2f2f2"/>
-`+
-        `<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"`+
-        ` font-family="system-ui,Segoe UI,Roboto,Arial" font-size="14" fill="#9aa">No preview</text>`+
-        `</svg>`
-      );
-    };
-    img.src = `${ENDPOINTS.download}?key=${encodeURIComponent(key)}&disposition=inline`;
-  };
+  const meta = document.createElement('div');
+  meta.innerHTML = `<span class="chip">~${pct}%</span>` +
+                   `<div class="meta">ID: ${key}</div>`;
 
-  return img;
+  wrap.appendChild(img); wrap.appendChild(open);
+  card.appendChild(wrap); card.appendChild(meta);
+  els.grid.appendChild(card);
 }
 
-// ---------- Network ----------
-async function fetchJSON(url, body){
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok){
-    const text = await res.text().catch(()=> '');
-    throw new Error(`HTTP ${res.status}: ${text || res.statusText}`);
-  }
-  return res.json();
-}
+function resetResults(){ els.grid.innerHTML=''; els.summary.textContent=''; nextToken=null; }
 
-function renderResults(items){
-  for (const it of items){
-    const div = document.createElement('div');
-    div.className = 'result';
-
-    const key = it.key || it.s3Key || it.photoKey || it.objectKey || it.photoId;
-    const img = buildImgForKey(key, 360);
-
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    const pct = Math.round((it.score || it.similarity || 1) * 100);
-    meta.innerHTML = `
-      <div><span class="pill">~${pct}%</span> match</div>
-      <div class="muted" style="word-break:break-all">ID: ${it.photoId || key}</div>
-    `;
-
-    div.appendChild(img);
-    div.appendChild(meta);
-    els.results.appendChild(div);
-  }
-}
-
-function setStatus(t){ els.status.textContent = t; }
-
-async function doSearch(next=false){
+// ================== Search flow ==================
+async function doSearch(loadMore=false){
+  els.err.textContent=''; setBusy(true);
   try{
-    els.search.disabled = true; setStatus('खोज जारी…');
+    let imageB64 = lastImageB64; // may be null if searching by meta only
 
-    let imageDataURL = null;
-    // 1) priority to selected file
-    const f = els.file.files && els.file.files[0];
-    if (f){ imageDataURL = await dataURLFromFile(f); }
-    else if (mediaStream){ imageDataURL = captureFromVideo(); }
-
-    if (!imageDataURL) throw new Error('कृपया कैमरा चालू करें या एक फोटो चुनें');
-
-    const payload = next ? lastPayload : {
+    const payload = loadMore ? Object.assign({}, lastRequest, { nextToken }) : {
       name: els.name.value.trim() || undefined,
       phone: els.phone.value.trim() || undefined,
-      eventIds: els.eventIds.value.trim() || undefined,
-      image: imageDataURL,             // backend expects FULL data URL (data:image/jpeg;base64,xxxx)
-      limit: 12,
+      eventIds: els.eventIds.value.split(',').map(s=>s.trim()).filter(Boolean),
+      imageBase64: imageB64 ? imageB64.split(',')[1] : undefined,
+      limit: 50,
+      nextToken: undefined
     };
 
-    if (next && nextToken) payload.pageToken = nextToken;
+    if(!loadMore){ resetResults(); }
+    lastRequest = payload;
 
-    console.debug('POST /search', payload);
-    const json = await fetchJSON(ENDPOINTS.search, payload);
+    console.log('POST /search', payload);
+    const data = await fetchJSON(`${API_BASE}/search`, { method:'POST', body: JSON.stringify(payload)});
 
-    // remember for pagination
-    lastPayload = payload;
-    nextToken = json.nextToken || json.nextContinuationToken || json.next || null;
+    const items = data.items || data.results || data.photos || [];
+    const count = items.length;
+    if(!loadMore){ els.grid.innerHTML=''; }
+    for(const it of items){ addCard(it); }
 
-    if (!next) els.results.innerHTML = '';
-    renderResults(json.items || json.results || []);
+    const total = (data.total ?? data.count ?? null);
+    const listed = document.querySelectorAll('.card').length;
+    els.summary.textContent = total ? `मिले ${total} फोटो।` : `मिले ${listed} फोटो।`;
 
-    const shown = (json.items?.length || json.results?.length || 0);
-    setStatus(`मिले ${shown} फोटो।`);
+    nextToken = data.nextToken || data.lastEvaluatedKey || data.nextContinuationToken || null;
     els.more.style.display = nextToken ? 'inline-flex' : 'none';
-  }catch(err){
-    console.error('search error', err);
-    alert('खोज में दिक्कत: ' + err.message);
-    setStatus('Error');
-  }finally{
-    els.search.disabled = false;
-  }
+  }catch(e){
+    console.error('search error', e);
+    els.err.textContent = 'खोज में दिक्कत: '+(e.message||e);
+    alert('खोज में दिक्कत: '+(e.message||e));
+  }finally{ setBusy(false); }
 }
 
-// ---------- Bindings ----------
-els.camBtn.addEventListener('click', ()=>{
-  if (mediaStream) stopCamera(); else startCamera();
+// ================== events ==================
+els.btnOpenCam.addEventListener('click', openCamera);
+els.btnTake.addEventListener('click', ()=>{
+  lastImageB64 = captureToJpeg(els.video);
+  els.status.textContent = 'सेल्फी कैप्चर हो गई।';
+});
+els.btnPick.addEventListener('click', ()=> els.file.click());
+els.file.addEventListener('change', async (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  try{ lastImageB64 = await fileToJpegB64(f); els.status.textContent='फोटो तैयार है।'; }
+  catch(err){ console.warn(err); els.err.textContent='फोटो पढ़ने में समस्या।'; }
+});
+els.btnSearch.addEventListener('click', ()=> doSearch(false));
+els.more.addEventListener('click', ()=> doSearch(true));
+els.btnReset.addEventListener('click', ()=>{
+  lastImageB64=null; nextToken=null; lastRequest=null; els.grid.innerHTML=''; els.summary.textContent=''; els.err.textContent='';
 });
 
-els.search.addEventListener('click', ()=> doSearch(false));
-els.more.addEventListener('click', ()=> doSearch(true));
-
-// Try auto-start but fail gracefully
-if (navigator.mediaDevices?.getUserMedia){
-  startCamera().catch(()=>{});
-}
 </script>
 </body>
 </html>
