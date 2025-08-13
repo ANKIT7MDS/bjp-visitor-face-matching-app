@@ -1,384 +1,416 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hi">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+  />
   <title>खोज (Debug Edition)</title>
   <style>
     :root{
-      --bg:#0b0f15; --panel:#101722; --muted:#7b8aa3; --text:#e6eefc; --accent:#4cc9f0;
-      --chip:#1b2330; --ok:#24d18c; --warn:#e7b416; --err:#ef476f; --card:#0f1622;
+      --bg:#0f1320;--card:#151b2d;--muted:#8aa0c5;--text:#e8eeff;--brand:#5b8cff;
+      --ok:#39d98a;--warn:#f7b955;--err:#ff6b6b;--chip:#2a3454;--chip2:#1b223b;
+      --border:#24304b;
     }
     *{box-sizing:border-box}
-    body{margin:0; background:var(--bg); color:var(--text); font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial}
-    a{color:var(--accent); text-decoration:none}
-    h1{margin:16px 0 8px}
-    .wrap{max-width:1200px;margin:0 auto;padding:16px}
-    .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    .badge{background:var(--chip); color:var(--muted); padding:6px 10px;border-radius:999px}
-    .muted{color:var(--muted)}
-    .panel{background:var(--panel); border:1px solid #1f2a3b; border-radius:12px; padding:12px}
-    .row{display:grid;grid-template-columns:repeat(12,1fr); gap:12px}
-    .col-6{grid-column:span 6}
-    .col-12{grid-column:span 12}
-    label{display:block;margin:6px 0 6px 2px;color:#b8c2d9;font-size:12px}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:var(--text);
+      font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    .container{max-width:1220px;margin:auto;padding:24px 20px 120px}
+    h1{margin:0 0 18px;font-size:28px;display:flex;gap:12px;align-items:center}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;
+      background:var(--chip);color:#dbe6ff;border:1px solid var(--border);font-size:12px
+    }
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px
+    }
+    label{display:block;font-size:12px;color:var(--muted);margin:2px 0 6px}
     input,textarea,select{
-      width:100%; background:#0d1320; color:var(--text); border:1px solid #1f2a3b;
-      border-radius:10px; padding:10px; outline:none;
+      width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);
+      background:#0e1424;color:var(--text);outline:none
     }
-    input::placeholder{color:#58647a}
+    input::placeholder{color:#6f85ad}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
     .btn{
-      background:#18314a; color:#e6eefc; border:1px solid #23405e; padding:10px 14px;
-      border-radius:10px; cursor:pointer; transition:.12s; user-select:none;
+      padding:10px 14px;border-radius:10px;border:1px solid var(--border);
+      background:var(--chip);color:#dbe6ff;cursor:pointer
     }
-    .btn:hover{transform:translateY(-1px)}
-    .btn.primary{background:linear-gradient(180deg,#275c8a,#21476c); border-color:#2b5a88}
-    .btn.warn{background:#553b0c;border-color:#7a540f}
-    .btn.ghost{background:transparent}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px}
-    .card{background:var(--card); border:1px solid #1d2737; border-radius:14px; overflow:hidden; display:flex; flex-direction:column}
-    .thumb{width:100%; height:180px; object-fit:cover; background:#0b1220}
-    .card-body{padding:10px; display:flex; flex-direction:column; gap:6px}
-    .pill{display:inline-flex;gap:6px; align-items:center; padding:2px 8px; border-radius:999px; background:#1b2232; color:#a8b2c6; font-size:12px}
-    .pill.ok{background:#0f2a22;color:#8fe8c0}
-    .pill.warn{background:#2c2811;color:#ffe08a}
-    .pill.err{background:#2a1218;color:#ff9fb2}
-    .actions{display:flex; gap:8px; margin-top:auto}
-    .small{font-size:12px}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-    .log{white-space:pre-wrap;background:#0a101a;border:1px solid #162134;border-radius:12px;padding:10px;max-height:280px;overflow:auto}
-    .tag{color:#9fb3c8;background:#0f1a29;border:1px solid #213147;padding:2px 6px;border-radius:6px}
-    .divider{height:1px;background:#1f2a3b;margin:10px 0}
-    .flex{display:flex;gap:10px;align-items:center}
-    .right{margin-left:auto}
-    .mt8{margin-top:8px}
-    .mt12{margin-top:12px}
-    .mt16{margin-top:16px}
-    .mb8{margin-bottom:8px}
-    .nowrap{white-space:nowrap}
-    @media(max-width:900px){.col-6{grid-column:span 12}}
+    .btn.primary{background:var(--brand);border-color:#4b78e6;color:white}
+    .btn.ghost{background:var(--chip2)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .grid{
+      display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:14px;margin-top:14px
+    }
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:840px){.row{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.grid{grid-template-columns:1fr}}
+    .photo{
+      background:#0c1122;border:1px solid var(--border);border-radius:12px;overflow:hidden;
+      display:flex;flex-direction:column
+    }
+    .ph-img{
+      aspect-ratio: 1 / 1;display:block;width:100%;object-fit:cover;background:#0b1020;
+      background-image:linear-gradient(120deg,#0b1020,#0a0f1c)
+    }
+    .ph-body{padding:12px;border-top:1px solid var(--border)}
+    .chips{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .chip{
+      background:var(--chip2);border:1px solid var(--border);padding:4px 8px;border-radius:999px;
+      color:#cfe1ff;font-size:12px
+    }
+    .chip.ok{background:#0e2b20;border-color:#124d36;color:#9af0c4}
+    .chip.err{background:#2b0e12;border-color:#5e1f26;color:#ffb3b3}
+    .meta{font-size:12px;color:#b7c8ef;word-break:break-all}
+    .ph-actions{display:flex;gap:8px;margin-top:10px}
+    .btn-sm{padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:#1a2340;color:#e5eeff;font-size:12px;cursor:pointer}
+    .btn-sm:hover{filter:brightness(1.08)}
+    .debug{
+      background:#0a0f1e;border:1px solid var(--border);border-radius:12px;
+      max-height:320px;overflow:auto;padding:10px 12px;font:12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      white-space:pre-wrap;color:#d8e6ff
+    }
+    .kbd{padding:2px 6px;border-radius:6px;border:1px solid var(--border);background:#0f162b;color:#cfe1ff}
+    .help{font-size:12px;color:#8aa0c5;margin-top:6px}
+    .noimg{display:grid;place-content:center;min-height:180px;color:#889ac0}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="bar">
-      <h1>खोज <span class="muted">(Debug Edition)</span></h1>
-      <span class="badge">Stage: <strong id="stage">PROD2</strong></span>
-      <span class="badge nowrap">API:
-        <span id="apiShow" class="muted mono" style="margin-left:6px"></span>
-      </span>
-      <button id="btnEditApi" class="btn ghost">Change API</button>
-      <button id="btnClearCache" class="btn ghost">Clear cache</button>
-      <span class="right"></span>
-      <a class="btn ghost" href="#" id="btnToggleDebug">Debug logs</a>
-    </div>
+  <div class="container">
+    <h1>
+      खोज <span class="muted">(Debug Edition)</span>
+      <span class="badge" id="stageBadge">Stage: –</span>
+      <span class="badge" id="apiBadge">API: –</span>
+      <button class="btn ghost" id="btnChangeApi">Change API</button>
+      <button class="btn ghost" id="btnClearCache">Clear cache</button>
+    </h1>
 
-    <div id="apiEditPanel" class="panel mt8" style="display:none">
-      <div class="row">
-        <div class="col-12">
-          <label>API Base (e.g., https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2)</label>
-          <input id="tbApiBase" placeholder="https://.../PROD2"/>
-          <div class="mt8 flex">
-            <button id="btnSaveApi" class="btn primary">Save</button>
-            <button id="btnCancelApi" class="btn">Cancel</button>
-          </div>
-        </div>
-      </div>
+    <div class="toolbar">
+      <button class="btn" id="btnShowLogs">Debug logs</button>
+      <span class="help">कोई समस्या हो तो <span class="kbd">Debug logs</span> खोलें — हर request/response का detail दिखेगा।</span>
     </div>
+    <div class="debug" id="debug" hidden></div>
 
-    <div class="panel mt12">
+    <div class="card" style="margin-bottom:16px">
       <div class="row">
-        <div class="col-6">
+        <div>
           <label>नाम (अनिवार्य)</label>
-          <input id="tbName" placeholder="जैसे: अंकित सोनी" />
+          <input id="inpName" placeholder="उदा. ANKIT / अंकित" />
         </div>
-        <div class="col-6">
+        <div>
           <label>मोबाइल नंबर (अनिवार्य)</label>
-          <input id="tbPhone" placeholder="जैसे: 9893074891" />
+          <input id="inpPhone" placeholder="उदा. 9893074891" />
         </div>
-        <div class="col-6">
+        <div>
           <label>Event IDs (comma-separated, optional)</label>
-          <input id="tbEvents" placeholder="उदा. EVT_2025_08_12, demo-20" />
+          <input id="inpEventIds" placeholder="उदा. EVT_2025_08_12" value="EVT_2025_08_12" />
         </div>
-        <div class="col-6">
+        <div>
           <label>Limit (server)</label>
-          <input id="tbLimit" type="number" min="1" max="200" value="50" />
-        </div>
-        <div class="col-12">
-          <div class="flex mt8">
-            <button id="btnSearch" class="btn primary">खोजें</button>
-            <button id="btnClear" class="btn">फॉर्म साफ़</button>
-            <span class="muted">पहले 10 फोटो दिखेंगे, “open” पर click से full-size thumb खुलेगा</span>
-          </div>
+          <input id="inpLimit" type="number" value="50" />
         </div>
       </div>
-    </div>
-
-    <div id="summary" class="mt8 muted small">मिले <b id="count">0</b> फोटो।</div>
-
-    <div id="results" class="grid mt8"></div>
-
-    <div id="debugPanel" class="panel mt12" style="display:none">
-      <div class="flex">
-        <strong>Debug logs</strong>
-        <span class="right"></span>
-        <button id="btnCopyLogs" class="btn">Copy</button>
-        <button id="btnClearLogs" class="btn warn">Clear</button>
+      <div class="actions">
+        <button class="btn primary" id="btnSearch">खोजें</button>
+        <button class="btn" id="btnClear">फॉर्म साफ़</button>
       </div>
-      <div id="logs" class="log mt8 mono"></div>
+      <div class="help">पहले 10 फ़ोटो दिखेंगी, “open” पर click से full-size thumb/इमेज खुलेगी।</div>
     </div>
+
+    <div class="muted" id="resultTitle">मिले 0 फोटो।</div>
+    <div class="grid" id="grid"></div>
   </div>
 
   <script>
-  // ========= Config =========
-  const API_BASE_DEFAULT = 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
+    /***********************
+     * CONFIG
+     ***********************/
+    const DEFAULT_API = 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
+    const LS_API_KEY = 'wm.apiBase.v1';
 
-  const LS_KEY = 'wm_api_base';
-  const API_BASE = getApiBase();
-  const SEARCH_URL = `${API_BASE}/search`;
-  const THUMB_URL = `${API_BASE}/thumb`;
+    const state = {
+      apiBase: localStorage.getItem(LS_API_KEY) || DEFAULT_API,
+      results: [],
+      loading: false
+    };
 
-  // ========= UI refs =========
-  const $ = sel => document.querySelector(sel);
-  const logsEl   = $('#logs');
-  const countEl  = $('#count');
-  const resEl    = $('#results');
-  const apiShow  = $('#apiShow');
-  const stageEl  = $('#stage');
+    /***********************
+     * DOM refs
+     ***********************/
+    const debugEl = document.getElementById('debug');
+    const apiBadge = document.getElementById('apiBadge');
+    const stageBadge = document.getElementById('stageBadge');
+    const btnShowLogs = document.getElementById('btnShowLogs');
+    const btnChangeApi = document.getElementById('btnChangeApi');
+    const btnClearCache = document.getElementById('btnClearCache');
 
-  apiShow.textContent = API_BASE;
+    const inpName = document.getElementById('inpName');
+    const inpPhone = document.getElementById('inpPhone');
+    const inpEventIds = document.getElementById('inpEventIds');
+    const inpLimit = document.getElementById('inpLimit');
 
-  // ========= Debug logger =========
-  function nowISO(){ return new Date().toISOString(); }
-  function log(level, msg, obj){
-    const line = `[${nowISO()}] [${level}] ${msg}` + (obj?`\n${safeJson(obj)}`:'');
-    logsEl.textContent += (logsEl.textContent ? '\n' : '') + line;
-    logsEl.scrollTop = logsEl.scrollHeight;
-    console[level==='error'?'error':'log'](line);
-  }
-  function safeJson(x){
-    try{ return JSON.stringify(x, null, 2); }catch{ return String(x) }
-  }
+    const btnSearch = document.getElementById('btnSearch');
+    const btnClear = document.getElementById('btnClear');
+    const grid = document.getElementById('grid');
+    const resultTitle = document.getElementById('resultTitle');
 
-  function getApiBase(){
-    const saved = localStorage.getItem(LS_KEY);
-    return saved && saved.startsWith('http') ? saved : API_BASE_DEFAULT;
-  }
-  function setApiBase(v){
-    localStorage.setItem(LS_KEY, v);
-    location.reload();
-  }
-
-  // ========= HTTP helper =========
-  async function fetchJSON(url, opts={}){
-    log('info', 'request', { url, method: opts.method||'GET', headers: opts.headers, body: opts.body });
-    let resp;
-    try{
-      resp = await fetch(url, {
-        mode: 'cors',            // CORS enabled
-        credentials: 'omit',     // no cookies
-        cache: 'no-store',
-        ...opts
-      });
-    }catch(e){
-      // network/preflight block
-      log('error', 'preflight-error', { error: String(e) });
-      alert(`Preflight failed: ${e.message || e}`);
-      throw e;
-    }
-
-    const text = await resp.text();
-    const contentType = (resp.headers.get('content-type')||'').toLowerCase();
-    let data;
-    if(contentType.includes('application/json')){
-      try{ data = JSON.parse(text) }catch{ data = { raw:text } }
-    }else{
-      data = { raw:text };
-    }
-
-    log('info', 'response', { url, status: resp.status, took_ms: null, headers: Object.fromEntries(resp.headers.entries()), raw: text.slice(0, 3000) });
-
-    if(!resp.ok){
-      const msg = data && data.message ? data.message : `HTTP ${resp.status}`;
-      alert(`खोज में दिक्कत: ${msg}`);
-      throw new Error(msg);
-    }
-    return data;
-  }
-
-  async function jpost(url, payload){
-    return fetchJSON(url, {
-      method:'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload||{})
-    });
-  }
-
-  // ========= Thumbnail URL builder =========
-  function makeThumbUrl({ eventId, key, width=720, orient=1 }){
-    const p = new URLSearchParams({
-      eventId,
-      key,
-      w: String(width),
-      orient: String(orient),
-      failOn: 'none',     // << important: string value
-    });
-    return `${THUMB_URL}?${p.toString()}`;
-  }
-
-  // ========= Rendering =========
-  function pct(score){
-    // server may send -1..1 OR 0..1; just show absolute percentage
-    if(score === null || score === undefined) return '~';
-    const v = Math.abs(Number(score));
-    if(!isFinite(v)) return '~';
-    return (v<=1 ? (v*100) : v).toFixed(0)+'%';
-  }
-
-  function renderResults(items){
-    resEl.innerHTML = '';
-    if(!Array.isArray(items) || !items.length){
-      countEl.textContent = '0';
-      return;
-    }
-    countEl.textContent = String(items.length);
-
-    items.slice(0, 50).forEach(it=>{
-      const id      = it.id || it.photoId || it.key || '-';
-      const key     = it.key || it.photoKey || '';
-      const eventId = it.eventId || it.event || '';
-      const score   = it.score;
-      const percent = pct(score);
-
-      const card   = document.createElement('div');
-      card.className = 'card';
-
-      // image
-      const img = document.createElement('img');
-      img.className = 'thumb';
-      img.alt = 'thumbnail';
-      if(eventId && key){
-        img.src = makeThumbUrl({ eventId, key, width: 480, orient: 1 });
-      }else{
-        img.alt = 'No preview';
+    /***********************
+     * Helpers: logging
+     ***********************/
+    function setBadges() {
+      apiBadge.textContent = 'API: ' + state.apiBase;
+      try {
+        const p = new URL(state.apiBase);
+        const stage = p.pathname.split('/').filter(Boolean)[0] || '—';
+        stageBadge.textContent = 'Stage: ' + stage.toUpperCase();
+      } catch {
+        stageBadge.textContent = 'Stage: —';
       }
-      img.onerror = ()=>{ img.src=''; img.alt='No preview'; };
+    }
+    setBadges();
 
-      // body
-      const body = document.createElement('div');
-      body.className = 'card-body mono';
-
-      const line1 = document.createElement('div');
-      line1.innerHTML = `<span class="pill ok">~${percent}</span> <span class="pill">match</span>`;
-      const line2 = document.createElement('div');
-      line2.className = 'small';
-      line2.innerHTML = `<b>ID:</b> ${escapeHtml(id)}`;
-      const line3 = document.createElement('div');
-      line3.className = 'small';
-      line3.innerHTML = `<b>Event:</b> ${escapeHtml(eventId)}`;
-
-      const actions = document.createElement('div');
-      actions.className = 'actions';
-
-      const btnOpen = document.createElement('button');
-      btnOpen.className = 'btn';
-      btnOpen.textContent = 'open';
-      btnOpen.onclick = ()=>{
-        if(eventId && key){
-          const u = makeThumbUrl({ eventId, key, width: 1280, orient: 1 });
-          window.open(u, '_blank','noopener');
-        }
-      };
-
-      const btnCopy = document.createElement('button');
-      btnCopy.className = 'btn';
-      btnCopy.textContent = 'copy id';
-      btnCopy.onclick = ()=>{
-        navigator.clipboard.writeText(id);
-      };
-
-      actions.append(btnOpen, btnCopy);
-      body.append(line1, line2, line3, actions);
-
-      card.append(img, body);
-      resEl.append(card);
-    });
-  }
-
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-
-  // ========= Search =========
-  async function doSearch(){
-    const name  = $('#tbName').value.trim();
-    const phone = $('#tbPhone').value.trim();
-    const limit = Math.max(1, Math.min(200, Number($('#tbLimit').value||50)));
-    const events = ($('#tbEvents').value||'').split(',').map(s=>s.trim()).filter(Boolean);
-
-    if(!name || !phone){
-      alert('कृपया नाम और मोबाइल नंबर भरें');
-      return;
+    function log(level, obj) {
+      const line = JSON.stringify({
+        time: new Date().toISOString(),
+        level,
+        obj
+      });
+      console[level === 'error' ? 'error' : 'log'](line);
+      const at = document.createElement('div');
+      at.textContent = line;
+      debugEl.appendChild(at);
+      if (debugEl.childNodes.length > 2000) {
+        debugEl.removeChild(debugEl.firstChild);
+      }
     }
 
-    const payload = { name, phone, limit };
-    if(events.length) payload.eventIds = events;
+    function showLogsToggle(){
+      debugEl.hidden = !debugEl.hidden;
+      btnShowLogs.textContent = debugEl.hidden ? 'Debug logs' : 'Hide logs';
+    }
 
-    const data = await jpost(SEARCH_URL, payload);
-    // server body format: { count, results }
-    const items = data.results || [];
-    renderResults(items);
-  }
+    btnShowLogs.onclick = showLogsToggle;
 
-  // ========= Handlers =========
-  $('#btnSearch').onclick = doSearch;
-  $('#btnClear').onclick = ()=>{
-    $('#tbName').value = '';
-    $('#tbPhone').value = '';
-    $('#tbEvents').value = '';
-    $('#tbLimit').value = 50;
-    resEl.innerHTML = ''; countEl.textContent = '0';
-  };
+    btnChangeApi.onclick = () => {
+      const v = prompt('Enter API base (e.g. https://<apiId>.execute-api.ap-south-1.amazonaws.com/PROD2)', state.apiBase);
+      if (!v) return;
+      try {
+        new URL(v); // validate
+        state.apiBase = v;
+        localStorage.setItem(LS_API_KEY, v);
+        setBadges();
+        alert('Saved!');
+      } catch {
+        alert('Invalid URL');
+      }
+    };
 
-  // Debug panel
-  const debugPanel = $('#debugPanel');
-  $('#btnToggleDebug').onclick = ()=>{
-    debugPanel.style.display = debugPanel.style.display==='none' ? '' : 'none';
-  };
-  $('#btnCopyLogs').onclick = ()=>{
-    navigator.clipboard.writeText(logsEl.textContent||'');
-  };
-  $('#btnClearLogs').onclick = ()=>{
-    logsEl.textContent = '';
-  };
+    btnClearCache.onclick = () => {
+      if (confirm('Clear localStorage API and image cache?')) {
+        localStorage.removeItem(LS_API_KEY);
+        caches?.keys?.().then(keys => keys.forEach(k => caches.delete(k)));
+        alert('Cleared. Reloading…');
+        location.reload();
+      }
+    };
 
-  // API Edit
-  const apiEdit = $('#apiEditPanel');
-  $('#btnEditApi').onclick = ()=>{
-    $('#tbApiBase').value = API_BASE;
-    apiEdit.style.display = '';
-  };
-  $('#btnSaveApi').onclick = ()=>{
-    const v = $('#tbApiBase').value.trim();
-    if(!v.startsWith('http')){ alert('Invalid URL'); return; }
-    setApiBase(v);
-  };
-  $('#btnCancelApi').onclick = ()=>{ apiEdit.style.display = 'none'; };
+    /***********************
+     * API helpers
+     ***********************/
+    const API = () => state.apiBase.replace(/\/+$/,''); // trim trailing slash
 
-  $('#btnClearCache').onclick = ()=>{
-    localStorage.removeItem(LS_KEY);
-    location.reload();
-  };
+    async function jpost(path, body){
+      const url = API() + path;
+      const payload = {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
+      log('info', {event:'request', url, method:'POST', headers:payload.headers, body:payload.body});
+      try{
+        const res = await fetch(url, payload);
+        const text = await res.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : {}; } catch { data = {raw:text}; }
+        log('info', {event:'response', url, status:res.status, took_ms:'n/a', headers: Object.fromEntries(res.headers.entries()), raw:text?.slice?.(0,2000)});
+        if(!res.ok) throw new Error(data?.message || ('HTTP '+res.status));
+        return data;
+      }catch(err){
+        log('error', {event:'fetch-error', url, message: String(err)});
+        throw err;
+      }
+    }
 
-  // ========= Startup =========
-  log('info','camera started'); // (placeholder log to match your earlier UI)
+    /***********************
+     * URL builders
+     ***********************/
+    const IMAGE_EXT_RE = /\.(jpe?g|png|webp|gif)$/i;
+    const withExt = (k) => IMAGE_EXT_RE.test(k) ? k : `${k}.jpg`;
 
-  // Fill from querystring for quick test (?name=..&phone=..&event=EVT_2025_08_12)
-  const qs = new URLSearchParams(location.search);
-  if(qs.get('name'))  $('#tbName').value  = qs.get('name');
-  if(qs.get('phone')) $('#tbPhone').value = qs.get('phone');
-  if(qs.get('event')) $('#tbEvents').value= qs.get('event');
+    function thumbURL(evId, key, w=256){
+      const k = withExt(key || '');
+      const q = new URLSearchParams({eventId: evId || '', key: k, w: String(w), orient:'1'});
+      return `${API()}/thumb?${q.toString()}`;
+    }
+    function fullURL(evId, key){
+      const k = withExt(key || '');
+      const q = new URLSearchParams({eventId: evId || '', key: k});
+      return `${API()}/download?${q.toString()}`;
+    }
 
+    /***********************
+     * UI actions
+     ***********************/
+    btnClear.onclick = () => {
+      inpName.value = '';
+      inpPhone.value = '';
+      // eventIds रखना चाहें तो रखें; यहाँ नहीं छू रहे
+      inpLimit.value = '50';
+      grid.innerHTML = '';
+      resultTitle.textContent = 'मिले 0 फोटो।';
+    };
+
+    btnSearch.onclick = doSearch;
+
+    async function doSearch(){
+      if(state.loading) return;
+      const name = (inpName.value || '').trim();
+      const phone = (inpPhone.value || '').trim();
+      const limit = Number(inpLimit.value || '50') || 50;
+      const eventIds = (inpEventIds.value || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if(!name && !phone){
+        alert('कम से कम नाम या मोबाइल नंबर भरिए।');
+        return;
+      }
+
+      state.loading = true;
+      btnSearch.disabled = true;
+      try{
+        const payload = {name, phone, limit, eventIds};
+        const data = await jpost('/search', payload);
+        const results = Array.isArray(data?.results) ? data.results : [];
+        state.results = results;
+        resultTitle.textContent = `मिले ${data?.count ?? results.length} फोटो।`;
+        renderGrid(results);
+      }catch(err){
+        alert('खोज में दिक्कत: ' + String(err?.message || err));
+      }finally{
+        state.loading = false;
+        btnSearch.disabled = false;
+      }
+    }
+
+    /***********************
+     * Grid rendering
+     ***********************/
+    function renderGrid(list){
+      grid.innerHTML = '';
+      if(!list?.length){
+        grid.innerHTML = '<div class="card noimg">कोई परिणाम नहीं।</div>';
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      list.forEach((r, i) => frag.appendChild(makeCard(r, i)));
+      grid.appendChild(frag);
+      setupLazy();
+    }
+
+    function makeCard(r, idx){
+      const id  = r.id || r.key || '';
+      const key = r.key || r.id || '';
+      const ev  = r.eventId || r.event || '';
+      const score = r.score != null ? Math.round(r.score*100) : null;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'photo';
+
+      const img = document.createElement('img');
+      img.className = 'ph-img';
+      img.alt = key;
+      img.dataset.src = thumbURL(ev, key, 320);
+      img.onerror = () => {
+        // fallback – small width
+        img.src = thumbURL(ev, key, 160) + '&t=' + Date.now();
+      };
+      wrap.appendChild(img);
+
+      const body = document.createElement('div');
+      body.className = 'ph-body';
+
+      const chips = document.createElement('div');
+      chips.className = 'chips';
+      if(score!=null){
+        const ch = document.createElement('span');
+        ch.className = 'chip ok';
+        ch.textContent = `~${score}%`;
+        chips.appendChild(ch);
+      }
+      const ch2 = document.createElement('span');
+      ch2.className = 'chip';
+      ch2.textContent = 'match';
+      chips.appendChild(ch2);
+      body.appendChild(chips);
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.innerHTML =
+        `ID: <b>${(id || key).replaceAll('<','&lt;')}</b><br/>` +
+        `Event: <b>${ev || '—'}</b>`;
+      body.appendChild(meta);
+
+      const act = document.createElement('div');
+      act.className = 'ph-actions';
+      const bOpen = document.createElement('button');
+      bOpen.className = 'btn-sm';
+      bOpen.textContent = 'open';
+      bOpen.onclick = () => window.open(fullURL(ev, key), '_blank');
+      act.appendChild(bOpen);
+
+      const bCopy = document.createElement('button');
+      bCopy.className = 'btn-sm';
+      bCopy.textContent = 'copy id';
+      bCopy.onclick = async () => {
+        try { await navigator.clipboard.writeText(id || key || ''); bCopy.textContent = 'copied!'; setTimeout(()=>bCopy.textContent='copy id',1200);} catch {}
+      };
+      act.appendChild(bCopy);
+
+      body.appendChild(act);
+      wrap.appendChild(body);
+      return wrap;
+    }
+
+    /***********************
+     * Lazy loading
+     ***********************/
+    let io;
+    function setupLazy(){
+      io?.disconnect?.();
+      io = new IntersectionObserver((entries)=>{
+        for(const e of entries){
+          if(e.isIntersecting){
+            const img = e.target;
+            if(img.dataset.src && img.dataset.src !== img.src){
+              img.src = img.dataset.src;
+              delete img.dataset.src;
+            }
+            io.unobserve(img);
+          }
+        }
+      },{rootMargin:'200px'});
+      document.querySelectorAll('img.ph-img').forEach(el=>io.observe(el));
+    }
+
+    // initial fill
+    (function init(){
+      log('info', {event:'app-started', api: state.apiBase});
+    })();
   </script>
 </body>
 </html>
