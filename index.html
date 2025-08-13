@@ -1,340 +1,304 @@
 <!doctype html>
 <html lang="hi">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>खोज (Debug + Selfie)</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>खोज – Debug Edition</title>
   <style>
     :root{
-      --bg:#0f1320;--card:#151b2d;--muted:#8aa0c5;--text:#e8eeff;--brand:#5b8cff;
-      --ok:#39d98a;--warn:#f7b955;--err:#ff6b6b;--chip:#2a3454;--chip2:#1b223b;--border:#24304b;
+      --bg:#0f1216; --panel:#151a21; --muted:#9aa4b2; --text:#e6edf3; --brand:#2ecc71; --accent:#7aa2f7; --danger:#ff6b6b;
+      --card:#0f1319; --chip:#223048; --chip2:#1a2333;
     }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);
-      font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    .container{max-width:1220px;margin:auto;padding:24px 20px 120px}
-    h1{margin:0 0 18px;font-size:28px;display:flex;gap:12px;align-items:center}
-    .badge{display:inline-flex;gap:8px;padding:6px 10px;border-radius:999px;
-      background:var(--chip);color:#dbe6ff;border:1px solid var(--border);font-size:12px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
-    label{display:block;font-size:12px;color:var(--muted);margin:2px 0 6px}
-    input,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);
-      background:#0e1424;color:var(--text)}
-    input::placeholder{color:#6f85ad}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--border);
-      background:var(--chip);color:#dbe6ff;cursor:pointer}
-    .btn.primary{background:var(--brand);border-color:#4b78e6;color:#fff}
-    .btn.ghost{background:var(--chip2)} .btn:disabled{opacity:.5;cursor:not-allowed}
-    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    a{color:var(--accent)}
+    .wrap{max-width:1200px;margin:0 auto;padding:24px}
+    h1{font-size:28px;margin:0 0 10px}
+    small.mono{font:12px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted)}
+
+    .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:8px 0 16px}
+    .chip{background:var(--chip);color:#cfe0ff;border:1px solid #2b3a55;border-radius:999px;padding:6px 12px}
+    .chip.good{background:#1e2a22;color:#b6f7c8;border-color:#2a3e30}
+    .btn{background:#1f2937;color:#d8e3f0;border:1px solid #334155;border-radius:10px;padding:10px 14px;cursor:pointer}
+    .btn:hover{filter:brightness(1.08)}
+    .btn.sm{padding:6px 10px;border-radius:8px}
+    .btn.ghost{background:transparent}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .card{background:var(--panel);border:1px solid #1f2836;border-radius:14px;padding:16px}
+
+    .grid{--w:260px;display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--w),1fr));gap:18px;margin-top:14px}
+    .result{background:var(--card);border:1px solid #1b2433;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+    .thumb{aspect-ratio:4/3;background:linear-gradient(180deg,#11161e,#0b0f15);display:grid;place-items:center;color:#7b8aa0;font-size:13px}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .meta{padding:10px 12px;border-top:1px solid #162033}
+    .pill{display:inline-block;font-size:12px;padding:4px 8px;border-radius:999px;background:var(--chip2);border:1px solid #2a3b55;color:#cbd8f1}
+    .row2{display:flex;justify-content:space-between;gap:10px;margin-top:10px}
+    .row2 .btn{flex:1}
+
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form .full{grid-column:1 / -1}
+    label{display:block;font-weight:600;color:#b9c5d8;margin-bottom:6px}
+    input[type=text], input[type=number]{width:100%;padding:12px;border-radius:10px;border:1px solid #273347;background:#111722;color:#eaf2ff}
+
+    .switch{display:inline-flex;align-items:center;gap:8px}
+    .switch input{accent-color:#2ecc71}
+
+    .logs{max-height:260px;overflow:auto;background:#0e141d;border:1px solid #1e293b;border-radius:12px;padding:10px}
+    .logline{display:flex;gap:8px;border-bottom:1px dashed #1f2a3b;padding:6px 0}
+    .logline:last-child{border-bottom:0}
+    .t{color:#8aa3bf;font:12px/1.2 ui-monospace,Consolas,monospace}
+    .lvl{font:11px/1.2 ui-monospace;min-width:42px;text-align:center;border-radius:6px;padding:2px 6px}
+    .lvl.info{background:#152332;color:#98c1ff}
+    .lvl.warn{background:#332a15;color:#ffd98e}
+    .lvl.error{background:#331a1a;color:#ffb3b3}
+
     .muted{color:var(--muted)}
-    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:14px}
-    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:840px){.row{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:560px){.grid{grid-template-columns:1fr}}
-    .photo{background:#0c1122;border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-    .ph-img{aspect-ratio:1/1;display:block;width:100%;object-fit:cover;background:#0b1020}
-    .ph-body{padding:12px;border-top:1px solid var(--border)}
-    .chips{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-    .chip{background:var(--chip2);border:1px solid var(--border);padding:4px 8px;border-radius:999px;color:#cfe1ff;font-size:12px}
-    .chip.ok{background:#0e2b20;border-color:#124d36;color:#9af0c4}
-    .meta{font-size:12px;color:#b7c8ef;word-break:break-all}
-    .ph-actions{display:flex;gap:8px;margin-top:10px}
-    .btn-sm{padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:#1a2340;color:#e5eeff;font-size:12px;cursor:pointer}
-    .debug{background:#0a0f1e;border:1px solid var(--border);border-radius:12px;max-height:320px;overflow:auto;padding:10px 12px;font:12px/1.45 ui-monospace,monospace;white-space:pre-wrap;color:#d8e6ff}
-    .kbd{padding:2px 6px;border-radius:6px;border:1px solid var(--border);background:#0f162b;color:#cfe1ff}
-    .help{font-size:12px;color:#8aa0c5;margin-top:6px}
-    .noimg{display:grid;place-content:center;min-height:180px;color:#889ac0}
-    .switch{display:inline-flex;gap:8px;align-items:center}
-    .switch input{width:auto}
-    .camRow{display:grid;grid-template-columns:320px 1fr;gap:14px}
-    video,canvas{width:100%;max-width:320px;border-radius:12px;border:1px solid var(--border);background:#0b1020}
-    .selfie-preview{width:120px;border-radius:10px;border:1px solid var(--border)}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>
-      खोज
-      <span class="badge" id="stageBadge">Stage: –</span>
-      <span class="badge" id="apiBadge">API: –</span>
-      <button class="btn ghost" id="btnChangeApi">Change API</button>
-      <button class="btn ghost" id="btnClearCache">Clear cache</button>
-    </h1>
+  <div class="wrap">
+    <h1>खोज <small class="muted">(Debug Edition)</small></h1>
 
     <div class="toolbar">
-      <button class="btn" id="btnShowLogs">Debug logs</button>
-      <label class="switch">
-        <input type="checkbox" id="chkRequireSelfie" checked>
-        <span>Require selfie</span>
-      </label>
-      <label class="switch">
-        <input type="checkbox" id="chkPreview">
-        <span>Load previews (thumbnails)</span>
-      </label>
-      <span class="help">कोई समस्या हो तो <span class="kbd">Debug logs</span> खोलें।</span>
-    </div>
-    <div class="debug" id="debug" hidden></div>
-
-    <!-- Selfie camera -->
-    <div class="card" style="margin-bottom:16px">
-      <label style="margin-bottom:8px">सेल्फ़ी कैमरा</label>
-      <div class="camRow">
-        <div>
-          <video id="cam" playsinline muted></video>
-          <canvas id="snap" hidden></canvas>
-          <div class="actions">
-            <button class="btn" id="btnCamStart">Start</button>
-            <button class="btn" id="btnCamStop">Stop</button>
-            <button class="btn primary" id="btnTake">सेल्फ़ी लें</button>
-            <button class="btn ghost" id="btnClearSelfie">हटाएँ</button>
-          </div>
-        </div>
-        <div>
-          <div class="help">कैप्चर की हुई सेल्फ़ी:</div>
-          <img id="selfieThumb" class="selfie-preview" alt="selfie" hidden>
-          <div class="help">Selfie required ON होने पर बिना फोटो के search call ब्लॉक होगी।</div>
-        </div>
-      </div>
+      <span class="chip good" id="stageChip">Stage: PROD2</span>
+      <span class="chip" id="apiChip">API: <span id="apiLabel"></span></span>
+      <button class="btn sm" id="btnChangeApi">Change API</button>
+      <button class="btn sm ghost" id="btnClearCache">Clear cache</button>
+      <button class="btn sm" id="btnToggleLogs">Debug logs</button>
     </div>
 
-    <div class="card" style="margin-bottom:16px">
-      <div class="row">
+    <div class="card">
+      <div class="form">
         <div>
-          <label>नाम (अनिवार्य)</label>
-          <input id="inpName" placeholder="उदा. ANKIT / अंकित"/>
+          <label>नाम (optional)</label>
+          <input id="name" type="text" placeholder="ANKIT" />
         </div>
         <div>
-          <label>मोबाइल नंबर (अनिवार्य)</label>
-          <input id="inpPhone" placeholder="उदा. 9893074891"/>
+          <label>मोबाइल नंबर (optional)</label>
+          <input id="phone" type="text" placeholder="9893074891" />
         </div>
-        <div>
+        <div class="full">
           <label>Event IDs (comma-separated, optional)</label>
-          <input id="inpEventIds" placeholder="उदा. EVT_2025_08_12" value="EVT_2025_08_12"/>
+          <input id="eventIds" type="text" placeholder="EVT_2025_08_12, EVT_2025_08_13" />
         </div>
         <div>
           <label>Limit (server)</label>
-          <input id="inpLimit" type="number" value="50"/>
+          <input id="limit" type="number" min="1" max="200" value="50" />
         </div>
-      </div>
-      <div class="actions">
-        <button class="btn primary" id="btnSearch">खोजें</button>
-        <button class="btn" id="btnClear">फॉर्म साफ़</button>
+        <div style="display:flex;align-items:flex-end;gap:10px">
+          <button class="btn" id="btnSearch">खोजें</button>
+          <button class="btn ghost" id="btnClear">फॉर्म साफ</button>
+        </div>
+        <div class="full" style="display:flex;gap:18px;align-items:center;margin-top:6px">
+          <label class="switch"><input id="optThumbs" type="checkbox" checked /> Thumbnails दिखाएँ</label>
+          <label class="switch"><input id="optRequireSelfie" type="checkbox" /> Selfie आवश्यक</label>
+          <span class="muted">पहले 10 फोटो दिखेंगे। "open" पर click से full-size खुलेगा।</span>
+        </div>
       </div>
     </div>
 
-    <div class="muted" id="resultTitle">मिले 0 फोटो।</div>
-    <div class="grid" id="grid"></div>
+    <div class="row" style="margin-top:18px">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong>सेल्फ़ी कैमरा</strong>
+          <span class="pill" id="camStatus">● offline</span>
+        </div>
+        <video id="cam" autoplay playsinline style="width:100%;background:#0b0f15;border:1px solid #1f2836;border-radius:10px"></video>
+        <div class="row2" style="margin-top:10px">
+          <button class="btn sm" id="btnCamStart">Start</button>
+          <button class="btn sm" id="btnCamStop">Stop</button>
+          <button class="btn sm" id="btnSnap">Snap</button>
+        </div>
+        <canvas id="snap" style="display:none"></canvas>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong>Debug logs</strong>
+          <button class="btn sm ghost" id="btnClearLogs">Clear</button>
+        </div>
+        <div class="logs" id="logs"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:18px 4px 8px">
+      <strong>मिले <span id="hitCount">0</span> फोटो।</strong>
+      <small class="muted">"open" = presigned URL (via /download)</small>
+    </div>
+
+    <div class="grid" id="results"></div>
   </div>
 
 <script>
-/** ===== CONFIG ===== **/
-const DEFAULT_API = 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
-const LS_API_KEY  = 'wm.apiBase.v1';
-const state = {
-  apiBase: localStorage.getItem(LS_API_KEY) || DEFAULT_API,
-  results: [], loading:false, selfieB64:null, preview:false, requireSelfie:true,
-  stream:null
-};
+// ---------- Config & Helpers ----------
+const d = (sel) => document.querySelector(sel);
+const ls = (k,v) => v===undefined ? localStorage.getItem(k) : localStorage.setItem(k,v);
 
-/** ===== DOM ===== **/
-const debugEl=document.getElementById('debug');
-const apiBadge=document.getElementById('apiBadge');
-const stageBadge=document.getElementById('stageBadge');
-const btnShowLogs=document.getElementById('btnShowLogs');
-const btnChangeApi=document.getElementById('btnChangeApi');
-const btnClearCache=document.getElementById('btnClearCache');
-
-const inpName=document.getElementById('inpName');
-const inpPhone=document.getElementById('inpPhone');
-const inpEventIds=document.getElementById('inpEventIds');
-const inpLimit=document.getElementById('inpLimit');
-
-const btnSearch=document.getElementById('btnSearch');
-const btnClear=document.getElementById('btnClear');
-
-const chkPreview=document.getElementById('chkPreview');
-const chkRequireSelfie=document.getElementById('chkRequireSelfie');
-
-const grid=document.getElementById('grid');
-const resultTitle=document.getElementById('resultTitle');
-
-const cam=document.getElementById('cam');
-const snap=document.getElementById('snap');
-const btnCamStart=document.getElementById('btnCamStart');
-const btnCamStop=document.getElementById('btnCamStop');
-const btnTake=document.getElementById('btnTake');
-const btnClearSelfie=document.getElementById('btnClearSelfie');
-const selfieThumb=document.getElementById('selfieThumb');
-
-/** ===== utils / logs ===== **/
-function setBadges(){
-  apiBadge.textContent='API: '+state.apiBase;
-  try{
-    const u=new URL(state.apiBase);
-    const st=u.pathname.split('/').filter(Boolean)[0]||'—';
-    stageBadge.textContent='Stage: '+st.toUpperCase();
-  }catch{stageBadge.textContent='Stage: —'}
-}
-setBadges();
-
-function log(level,obj){
-  const line=JSON.stringify({time:new Date().toISOString(),level,obj});
-  console[level==='error'?'error':'log'](line);
-  const div=document.createElement('div'); div.textContent=line; debugEl.appendChild(div);
-  if(debugEl.childNodes.length>2000) debugEl.removeChild(debugEl.firstChild);
-}
-btnShowLogs.onclick=()=>{debugEl.hidden=!debugEl.hidden;btnShowLogs.textContent=debugEl.hidden?'Debug logs':'Hide logs'};
-
-btnChangeApi.onclick=()=>{
-  const v=prompt('API base',state.apiBase); if(!v) return;
-  try{ new URL(v); state.apiBase=v; localStorage.setItem(LS_API_KEY,v); setBadges(); alert('Saved!');}
-  catch{alert('Invalid URL')}
-};
-btnClearCache.onclick=()=>{
-  localStorage.removeItem(LS_API_KEY);
-  alert('Cleared local API setting. Reloading…'); location.reload();
-};
-chkPreview.onchange=()=>state.preview=chkPreview.checked;
-chkRequireSelfie.onchange=()=>state.requireSelfie=chkRequireSelfie.checked;
-
-/** ===== camera ===== **/
-async function camStart(){
-  try{
-    state.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480}, audio:false});
-    cam.srcObject=state.stream; await cam.play(); log('info','camera started');
-  }catch(e){log('error',{camera:'start-failed',error:String(e)}); alert('Camera failed: '+e)}
-}
-function camStop(){
-  try{state.stream?.getTracks()?.forEach(t=>t.stop()); cam.srcObject=null; log('info','camera stopped');}
-  catch(e){/*no-op*/}
-}
-function takeSelfie(){
-  if(!cam.videoWidth){alert('Camera not ready');return}
-  snap.width=cam.videoWidth; snap.height=cam.videoHeight;
-  const ctx=snap.getContext('2d'); ctx.drawImage(cam,0,0);
-  state.selfieB64=snap.toDataURL('image/jpeg',0.85);
-  selfieThumb.src=state.selfieB64; selfieThumb.hidden=false;
-  log('info',{event:'selfie-captured',size:state.selfieB64.length});
-}
-function clearSelfie(){ state.selfieB64=null; selfieThumb.hidden=true; selfieThumb.src='' }
-
-btnCamStart.onclick=camStart;
-btnCamStop.onclick=camStop;
-btnTake.onclick=takeSelfie;
-btnClearSelfie.onclick=clearSelfie;
-
-/** ===== API helpers ===== **/
-const API = () => state.apiBase.replace(/\/+$/,'');
-async function jpost(path, body){
-  const url=API()+path;
-  const payload={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
-  log('info',{event:'request',url,method:'POST',body:payload.body});
-  const res=await fetch(url,payload).catch(e=>{log('error',{event:'preflight-error',error:String(e)});throw e});
-  const text=await res.text(); let data=null; try{data=text?JSON.parse(text):{}}catch{data={raw:text}};
-  log('info',{event:'response',url,status:res.status,raw:text?.slice?.(0,800)});
-  if(!res.ok) throw new Error(data?.message||('HTTP '+res.status));
-  return data;
+function API(){
+  let base = ls('apiBase') || 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
+  return base.replace(/\/$/, '');
 }
 
-/** ===== URL builders ===== **/
-const IMAGE_EXT_RE=/\.(jpe?g|png|webp|gif)$/i;
-const withExt=k=>IMAGE_EXT_RE.test(k)?k:(k+'.jpg');
-function thumbURL(eventId,key,w=256){
-  const k=withExt(key||''); const q=new URLSearchParams({eventId,key:k,w:String(w),orient:'1'});
+function showApi(){
+  d('#apiLabel').textContent = API();
+  const m = API().match(/\/([A-Za-z0-9_-]+)$/); // stage suffix
+  d('#stageChip').textContent = 'Stage: ' + (m?m[1]:'?');
+}
+showApi();
+
+function now(){ return new Date().toISOString(); }
+function log(level, obj){
+  try{ console[level==='error'?'error':'log']({time: now(), level, obj}); }catch{}
+  const line = document.createElement('div'); line.className = 'logline';
+  const t = document.createElement('div'); t.className='t'; t.textContent = now();
+  const lv = document.createElement('div'); lv.className='lvl '+level; lv.textContent=level;
+  const pre = document.createElement('pre'); pre.textContent = (typeof obj==='string')?obj:JSON.stringify(obj, null, 2);
+  pre.style.margin=0; pre.style.whiteSpace='pre-wrap'; pre.style.wordBreak='break-word';
+  line.append(t, lv, pre); d('#logs').append(line); d('#logs').scrollTop = d('#logs').scrollHeight;
+}
+
+function withExt(key=''){
+  // Ensure a file extension (default .jpg). If already has dot, keep as is.
+  return /\.[a-z0-9]{3,4}$/i.test(key) ? key : key + '.jpg';
+}
+
+function thumbURL(ev, key, w=256){
+  const k = withExt(key||'');
+  const q = new URLSearchParams({ eventId: ev||'', key: k, w: String(w), orient: '1', failOn: 'none' });
   return `${API()}/thumb?${q}`;
 }
-function fullURL(eventId,key){
-  const k=withExt(key||''); const q=new URLSearchParams({eventId,key:k});
-  return `${API()}/download?${q}`;
-}
 
-/** ===== search ===== **/
-btnClear.onclick=()=>{
-  inpName.value=''; inpPhone.value=''; inpLimit.value='50'; // eventIds जैसा है वैसा
-  grid.innerHTML=''; resultTitle.textContent='मिले 0 फोटो।'; clearSelfie();
-};
-
-btnSearch.onclick=async ()=>{
-  if(state.loading) return;
-  const name=(inpName.value||'').trim();
-  const phone=(inpPhone.value||'').trim();
-  const limit=Number(inpLimit.value||'50')||50;
-  const eventIds=(inpEventIds.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-
-  if(!name && !phone){ alert('कम से कम नाम या मोबाइल नंबर भरिए।'); return; }
-  if(state.requireSelfie && !state.selfieB64){ alert('सेल्फ़ी अनिवार्य है — कृपया “Start” करके “सेल्फ़ी लें”।'); return; }
-
-  state.loading=true; btnSearch.disabled=true;
+async function openFull(eventId, key){
   try{
-    const payload={name,phone,limit,eventIds, face: state.selfieB64 || undefined};
-    const data=await jpost('/search', payload);
-    const results=Array.isArray(data?.results)?data.results:[];
-    state.results=results; resultTitle.textContent=`मिले ${data?.count ?? results.length} फोटो।`;
-    renderGrid(results);
-  }catch(e){ alert('खोज में दिक्कत: '+e) }
-  finally{ state.loading=false; btnSearch.disabled=false; }
+    const k = withExt(key||'');
+    const q = new URLSearchParams({ eventId, key: k });
+    const url = `${API()}/download?${q}`;
+    const res = await fetch(url);
+    const text = await res.text();
+    let data = null; try{ data = JSON.parse(text); }catch{}
+    log('info', {event:'download', url, status:res.status, raw:text.slice(0,400)});
+    if(data && data.url){ window.open(data.url, '_blank'); }
+    else{ alert('Open failed: '+(text||res.status)); }
+  }catch(e){ alert('Open failed: '+e.message); }
+}
+
+async function jpost(url, body){
+  const payload = JSON.stringify(body||{});
+  log('info', {event:'request', url, method:'POST', headers:{'Content-Type':'application/json'}, body:payload});
+  const t0 = performance.now();
+  const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:payload });
+  const text = await res.text();
+  const t1 = performance.now();
+  log('info', {event:'response', url, status:res.status, took_ms:Math.round(t1-t0), headers:Object.fromEntries(res.headers.entries()), raw:text.slice(0,400)});
+  if(!res.ok) throw new Error(`HTTP ${res.status}: ${text}`);
+  try{ return JSON.parse(text); }catch(_){ return text; }
+}
+
+// ---------- Camera ----------
+let stream = null; let snapData = null;
+async function startCam(){
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' }, audio:false });
+    d('#cam').srcObject = stream; d('#camStatus').textContent='● online';
+    d('#camStatus').style.background='#1e2a22'; d('#camStatus').style.color='#b6f7c8';
+    log('info', 'camera started');
+  }catch(e){ log('error', 'camera error: '+e.message); alert('Camera error: '+e.message); }
+}
+function stopCam(){ try{ stream?.getTracks().forEach(t=>t.stop()); }catch{} stream=null; d('#cam').srcObject=null; d('#camStatus').textContent='● offline'; d('#camStatus').style.background='var(--chip2)'; d('#camStatus').style.color='#cbd8f1'; }
+function snap(){
+  if(!stream){ alert('Camera is not running'); return; }
+  const v = d('#cam'); const c = d('#snap'); const r = window.devicePixelRatio||1;
+  const w = v.videoWidth || 640, h = v.videoHeight || 480;
+  c.width = w; c.height = h; const g = c.getContext('2d'); g.drawImage(v,0,0,w,h);
+  snapData = c.toDataURL('image/jpeg', 0.92);
+  log('info', {event:'snap', size: snapData?.length});
+}
+
+// ---------- Search ----------
+function parseEvents(s){
+  if(!s) return [];
+  return s.split(',').map(x=>x.trim()).filter(Boolean);
+}
+
+function renderResults(list){
+  const grid = d('#results'); grid.innerHTML='';
+  (list||[]).forEach((it,idx)=>{
+    const card = document.createElement('div'); card.className='result';
+
+    const th = document.createElement('div'); th.className='thumb'; th.textContent='No preview';
+    const img = document.createElement('img'); img.style.display='none';
+    if(d('#optThumbs').checked){
+      img.src = thumbURL(it.eventId, it.key || it.id);
+      img.onload = ()=>{ th.textContent=''; img.style.display='block'; };
+      img.onerror = ()=>{ th.textContent='preview failed'; };
+      th.append(img);
+    }
+    card.append(th);
+
+    const meta = document.createElement('div'); meta.className='meta';
+    const pill = document.createElement('span'); pill.className='pill'; pill.textContent = (it.score!=null?`~${Math.round(it.score*100)}%`:'~100%');
+    const m = document.createElement('div'); m.style.marginTop='6px'; m.innerHTML = `<div class="muted">ID:</div><div style="word-break:break-all">${it.id||it.key}</div><div class="muted" style="margin-top:6px">Event:</div><div>${it.eventId||'?'}</div>`;
+    meta.append(pill, m); card.append(meta);
+
+    const row2 = document.createElement('div'); row2.className='row2';
+    const bOpen = document.createElement('button'); bOpen.className='btn sm'; bOpen.textContent='open';
+    bOpen.onclick = ()=> openFull(it.eventId, it.key||it.id);
+    const bCopy = document.createElement('button'); bCopy.className='btn sm ghost'; bCopy.textContent='copy id';
+    bCopy.onclick = async ()=>{ await navigator.clipboard.writeText(it.id||''); bCopy.textContent='copied'; setTimeout(()=>bCopy.textContent='copy id', 1200); };
+    row2.append(bOpen,bCopy); card.append(row2);
+
+    grid.append(card);
+  });
+}
+
+async function doSearch(){
+  try{
+    const requireSelfie = d('#optRequireSelfie').checked;
+    if(requireSelfie && !snapData){ alert('Selfie आवश्यक है। पहले Start → Snap करें।'); return; }
+
+    const body = {
+      name: d('#name').value.trim() || undefined,
+      phone: d('#phone').value.trim() || undefined,
+      limit: Number(d('#limit').value) || 50,
+      eventIds: parseEvents(d('#eventIds').value)
+      // यदि backend selfie स्वीकार करता है, यहाँ base64 भेजें: face: snapData
+    };
+
+    const url = API()+ '/search';
+    const resp = await jpost(url, body);
+    const count = Number(resp?.count ?? 0);
+    d('#hitCount').textContent = count;
+    renderResults(resp?.results||[]);
+  }catch(e){
+    log('error', 'search error: '+ e.message);
+    alert('खोज में दिक्कत: '+ e.message);
+  }
+}
+
+// ---------- UI wiring ----------
+
+d('#btnChangeApi').onclick = () => {
+  const cur = API();
+  const x = prompt('Enter API base (example: https://xyz.execute-api.ap-south-1.amazonaws.com/PROD2)', cur);
+  if(x){ ls('apiBase', x.trim()); showApi(); }
 };
 
-/** ===== grid ===== **/
-function renderGrid(list){
-  grid.innerHTML='';
-  if(!list?.length){ grid.innerHTML='<div class="card noimg">कोई परिणाम नहीं।</div>'; return; }
-  const frag=document.createDocumentFragment();
-  list.forEach((r,i)=>frag.appendChild(makeCard(r,i)));
-  grid.appendChild(frag);
-  setupLazy();
-}
-function makeCard(r,idx){
-  const id=r.id||r.key||''; const key=r.key||r.id||''; const ev=r.eventId||r.event||''; const score=r.score!=null?Math.round(r.score*100):null;
-  const wrap=document.createElement('div'); wrap.className='photo';
+d('#btnClearCache').onclick = () => { localStorage.clear(); alert('Local cache cleared'); showApi(); };
 
-  const img=document.createElement('img'); img.className='ph-img'; img.alt=key;
-  if(state.preview){ img.dataset.src=thumbURL(ev,key,320); } // only when preview ON
-  else { img.dataset.src=''; } // no preview
-  img.onerror=()=>{ if(state.preview){ img.src=thumbURL(ev,key,160)+'&t='+Date.now(); } };
-  wrap.appendChild(img);
+d('#btnToggleLogs').onclick = () => { document.querySelector('.row').scrollIntoView({behavior:'smooth'}); };
 
-  const body=document.createElement('div'); body.className='ph-body';
-  const chips=document.createElement('div'); chips.className='chips';
-  if(score!=null){ const c=document.createElement('span'); c.className='chip ok'; c.textContent=`~${score}%`; chips.appendChild(c); }
-  const c2=document.createElement('span'); c2.className='chip'; c2.textContent='match'; chips.appendChild(c2);
-  body.appendChild(chips);
+// camera controls
+ d('#btnCamStart').onclick = startCam;
+ d('#btnCamStop').onclick = stopCam;
+ d('#btnSnap').onclick = snap;
 
-  const meta=document.createElement('div'); meta.className='meta';
-  meta.innerHTML=`ID: <b>${(id||key).replaceAll('<','&lt;')}</b><br/>Event: <b>${ev||'—'}</b>`;
-  body.appendChild(meta);
+// search
+ d('#btnSearch').onclick = doSearch;
+ d('#btnClear').onclick = () => { ['#name','#phone','#eventIds'].forEach(sel=>d(sel).value=''); d('#limit').value=50; };
+ d('#btnClearLogs').onclick = () => d('#logs').innerHTML='';
 
-  const act=document.createElement('div'); act.className='ph-actions';
-  const bOpen=document.createElement('button'); bOpen.className='btn-sm'; bOpen.textContent='open';
-  bOpen.onclick=()=>window.open(fullURL(ev,key),'_blank'); act.appendChild(bOpen);
-  const bCopy=document.createElement('button'); bCopy.className='btn-sm'; bCopy.textContent='copy id';
-  bCopy.onclick=async()=>{try{await navigator.clipboard.writeText(id||key||''); bCopy.textContent='copied!'; setTimeout(()=>bCopy.textContent='copy id',1200);}catch{}};
-  act.appendChild(bCopy);
-  body.appendChild(act);
-
-  wrap.appendChild(body); return wrap;
-}
-
-/** ===== lazy load (only if preview ON) ===== **/
-let io;
-function setupLazy(){
-  io?.disconnect?.(); if(!state.preview) return;
-  io=new IntersectionObserver((ents)=>{
-    for(const e of ents){
-      if(e.isIntersecting){
-        const img=e.target;
-        if(img.dataset.src && img.dataset.src!==img.src){ img.src=img.dataset.src; delete img.dataset.src; }
-        io.unobserve(img);
-      }
-    }
-  },{rootMargin:'200px'});
-  document.querySelectorAll('img.ph-img').forEach(el=>io.observe(el));
-}
-
-/** init **/
-log('info',{event:'app-started',api:state.apiBase});
+// initial
+log('info', 'UI ready');
 </script>
 </body>
 </html>
