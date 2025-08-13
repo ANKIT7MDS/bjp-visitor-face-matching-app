@@ -2,377 +2,383 @@
 <html lang="hi">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WedMatch Search (Debug Edition)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>खोज (Debug Edition)</title>
   <style>
     :root{
-      --bg:#0f1216; --card:#171b21; --muted:#8aa0b2; --text:#e9f0f6; --brand:#2dd4bf; --danger:#ff6b6b;
-      --ok:#22c55e; --warn:#f59e0b; --accent:#60a5fa;
+      --bg:#0b0f15; --panel:#101722; --muted:#7b8aa3; --text:#e6eefc; --accent:#4cc9f0;
+      --chip:#1b2330; --ok:#24d18c; --warn:#e7b416; --err:#ef476f; --card:#0f1622;
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,Segoe UI,Roboto,Arial}
-    .wrap{max-width:1100px;margin:24px auto;padding:0 12px}
-    h1{margin:0 0 16px;font-size:28px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    .card{background:var(--card);border:1px solid #262c36;border-radius:14px;padding:14px}
-    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
-    input,textarea,select{width:100%;padding:12px;border-radius:10px;border:1px solid #2a3340;background:#0f131a;color:var(--text)}
-    .btn{padding:10px 14px;border:0;border-radius:10px;background:var(--brand);color:#002b27;cursor:pointer;font-weight:600}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    .btn.secondary{background:#1f2937;color:#dbeafe}
-    .btn.warn{background:var(--warn);color:#2b1700}
-    .btn.danger{background:var(--danger);color:#2b0000}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+    body{margin:0; background:var(--bg); color:var(--text); font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial}
+    a{color:var(--accent); text-decoration:none}
+    h1{margin:16px 0 8px}
+    .wrap{max-width:1200px;margin:0 auto;padding:16px}
+    .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .badge{background:var(--chip); color:var(--muted); padding:6px 10px;border-radius:999px}
     .muted{color:var(--muted)}
-    .grid{display:grid;grid-template-columns:repeat( auto-fill, minmax(240px,1fr) );gap:14px}
-    .pic{position:relative;border-radius:14px;overflow:hidden;background:#0b0f14;border:1px solid #222a35}
-    .pic img{width:100%;height:220px;object-fit:cover;display:block;filter:contrast(1.05);background:#090c10}
-    .pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;background:#0e1b12;color:#9ef2b0;border:1px solid #173a1e}
-    .pill.warn{background:#241a06;color:#ffd38a;border-color:#3a2a0a}
-    .pill.bad{background:#2a0f12;color:#ffb4b4;border-color:#3e171c}
-    .rowline{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-top:8px}
-    .rowline small{color:var(--muted)}
-    .opener{display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;background:#0f172a;color:#c7d2fe;border:1px solid #1f2a44;text-decoration:none}
-    .opener:hover{background:#16213d}
-    .counter{margin:10px 0 0;color:var(--muted)}
-    .seeMoreWrap{display:flex;justify-content:center;margin:18px 0}
-    /* video */
-    .videoWrap{position:relative;border-radius:14px;overflow:hidden}
-    video{width:100%;border-radius:14px;background:black}
-    .statusDot{width:8px;height:8px;border-radius:999px;background:#777;display:inline-block;margin-left:6px}
-    .on{background:var(--ok)!important}
-    .off{background:#555!important}
-    /* debug panel */
-    details.debug{margin-top:16px}
-    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:12px;padding:2px 6px;border-radius:6px;background:#0e1521;color:#9fb8ff;border:1px solid #1b2741}
-    .log{max-height:320px;overflow:auto;background:#0b1017;border:1px solid #1c2431;border-radius:12px;padding:10px;margin-top:10px;font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap}
-    .tag{display:inline-block;padding:2px 8px;border-radius:999px;background:#0f172a;color:#66a3ff;border:1px solid #1e2a45;margin-right:6px}
+    .panel{background:var(--panel); border:1px solid #1f2a3b; border-radius:12px; padding:12px}
+    .row{display:grid;grid-template-columns:repeat(12,1fr); gap:12px}
+    .col-6{grid-column:span 6}
+    .col-12{grid-column:span 12}
+    label{display:block;margin:6px 0 6px 2px;color:#b8c2d9;font-size:12px}
+    input,textarea,select{
+      width:100%; background:#0d1320; color:var(--text); border:1px solid #1f2a3b;
+      border-radius:10px; padding:10px; outline:none;
+    }
+    input::placeholder{color:#58647a}
+    .btn{
+      background:#18314a; color:#e6eefc; border:1px solid #23405e; padding:10px 14px;
+      border-radius:10px; cursor:pointer; transition:.12s; user-select:none;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(180deg,#275c8a,#21476c); border-color:#2b5a88}
+    .btn.warn{background:#553b0c;border-color:#7a540f}
+    .btn.ghost{background:transparent}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px}
+    .card{background:var(--card); border:1px solid #1d2737; border-radius:14px; overflow:hidden; display:flex; flex-direction:column}
+    .thumb{width:100%; height:180px; object-fit:cover; background:#0b1220}
+    .card-body{padding:10px; display:flex; flex-direction:column; gap:6px}
+    .pill{display:inline-flex;gap:6px; align-items:center; padding:2px 8px; border-radius:999px; background:#1b2232; color:#a8b2c6; font-size:12px}
+    .pill.ok{background:#0f2a22;color:#8fe8c0}
+    .pill.warn{background:#2c2811;color:#ffe08a}
+    .pill.err{background:#2a1218;color:#ff9fb2}
+    .actions{display:flex; gap:8px; margin-top:auto}
     .small{font-size:12px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .log{white-space:pre-wrap;background:#0a101a;border:1px solid #162134;border-radius:12px;padding:10px;max-height:280px;overflow:auto}
+    .tag{color:#9fb3c8;background:#0f1a29;border:1px solid #213147;padding:2px 6px;border-radius:6px}
+    .divider{height:1px;background:#1f2a3b;margin:10px 0}
+    .flex{display:flex;gap:10px;align-items:center}
+    .right{margin-left:auto}
+    .mt8{margin-top:8px}
+    .mt12{margin-top:12px}
+    .mt16{margin-top:16px}
+    .mb8{margin-bottom:8px}
+    .nowrap{white-space:nowrap}
+    @media(max-width:900px){.col-6{grid-column:span 12}}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>खोज <span class="muted small">(Debug Edition)</span></h1>
-
-    <!-- CONFIG + Help -->
-    <div class="card" style="margin-bottom:12px">
-      <div class="toolbar" style="justify-content:space-between">
-        <div>
-          <span class="tag">Stage: <b id="stageTag"></b></span>
-          <span class="tag">API: <b id="apiTag"></b></span>
-        </div>
-        <div class="toolbar">
-          <button class="btn secondary" id="btnPreflight">Preflight (OPTIONS)</button>
-          <button class="btn secondary" id="btnCopyLogs">Copy logs</button>
-          <button class="btn warn" id="btnClearLogs">Clear logs</button>
-        </div>
-      </div>
-      <div class="muted small" style="margin-top:8px">
-        कोई समस्या हो तो <span class="kbd">Debug logs</span> खोलें — हर request/response का detail दिखेगा।
-      </div>
+    <div class="bar">
+      <h1>खोज <span class="muted">(Debug Edition)</span></h1>
+      <span class="badge">Stage: <strong id="stage">PROD2</strong></span>
+      <span class="badge nowrap">API:
+        <span id="apiShow" class="muted mono" style="margin-left:6px"></span>
+      </span>
+      <button id="btnEditApi" class="btn ghost">Change API</button>
+      <button id="btnClearCache" class="btn ghost">Clear cache</button>
+      <span class="right"></span>
+      <a class="btn ghost" href="#" id="btnToggleDebug">Debug logs</a>
     </div>
 
-    <!-- Search form + Camera -->
-    <div class="row">
-      <div class="card">
-        <div class="row" style="grid-template-columns:1fr 1fr">
-          <div>
-            <label>नाम (अनिवार्य)</label>
-            <input id="name" placeholder="उदा. 9893074891" />
+    <div id="apiEditPanel" class="panel mt8" style="display:none">
+      <div class="row">
+        <div class="col-12">
+          <label>API Base (e.g., https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2)</label>
+          <input id="tbApiBase" placeholder="https://.../PROD2"/>
+          <div class="mt8 flex">
+            <button id="btnSaveApi" class="btn primary">Save</button>
+            <button id="btnCancelApi" class="btn">Cancel</button>
           </div>
-          <div>
-            <label>मोबाइल नंबर (अनिवार्य)</label>
-            <input id="phone" placeholder="उदा. 9893074891" />
-          </div>
-          <div>
-            <label>Event IDs (comma-separated, optional)</label>
-            <input id="eventIds" placeholder="उदा. EVT_2025_08_12, demo-2025-01" />
-          </div>
-          <div>
-            <label>Limit (server)</label>
-            <input id="limit" type="number" min="1" max="200" value="50" />
-          </div>
-        </div>
-
-        <div class="toolbar" style="margin-top:12px">
-          <button id="btnSearch" class="btn">खोजें</button>
-          <button id="btnClear" class="btn secondary">फ़ॉर्म साफ़</button>
-          <div class="muted small">पहले 10 फोटो दिखेंगे, “See more” से और दिखाये जा सकते हैं।</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="toolbar" style="justify-content:space-between;margin-bottom:10px">
-          <div>सेल्फ़ी कैमरा
-            <span id="camDot" class="statusDot off"></span>
-          </div>
-          <div class="toolbar">
-            <button id="btnCamStart" class="btn secondary">Start</button>
-            <button id="btnCamStop" class="btn secondary">Stop</button>
-          </div>
-        </div>
-        <div class="videoWrap">
-          <video id="video" autoplay playsinline muted></video>
         </div>
       </div>
     </div>
 
-    <!-- Results -->
-    <div class="card" style="margin-top:14px">
-      <div class="toolbar" style="justify-content:space-between;align-items:center">
-        <div>परिणाम</div>
-        <div class="muted" id="countWrap">मिले 0 फ़ोटो।</div>
-      </div>
-      <div class="grid" id="grid"></div>
-      <div class="seeMoreWrap">
-        <button id="btnMore" class="btn secondary" style="display:none">See more</button>
+    <div class="panel mt12">
+      <div class="row">
+        <div class="col-6">
+          <label>नाम (अनिवार्य)</label>
+          <input id="tbName" placeholder="जैसे: अंकित सोनी" />
+        </div>
+        <div class="col-6">
+          <label>मोबाइल नंबर (अनिवार्य)</label>
+          <input id="tbPhone" placeholder="जैसे: 9893074891" />
+        </div>
+        <div class="col-6">
+          <label>Event IDs (comma-separated, optional)</label>
+          <input id="tbEvents" placeholder="उदा. EVT_2025_08_12, demo-20" />
+        </div>
+        <div class="col-6">
+          <label>Limit (server)</label>
+          <input id="tbLimit" type="number" min="1" max="200" value="50" />
+        </div>
+        <div class="col-12">
+          <div class="flex mt8">
+            <button id="btnSearch" class="btn primary">खोजें</button>
+            <button id="btnClear" class="btn">फॉर्म साफ़</button>
+            <span class="muted">पहले 10 फोटो दिखेंगे, “open” पर click से full-size thumb खुलेगा</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Debug -->
-    <details class="debug card">
-      <summary><b>Debug logs</b></summary>
-      <div class="log" id="logBox"></div>
-    </details>
+    <div id="summary" class="mt8 muted small">मिले <b id="count">0</b> फोटो।</div>
+
+    <div id="results" class="grid mt8"></div>
+
+    <div id="debugPanel" class="panel mt12" style="display:none">
+      <div class="flex">
+        <strong>Debug logs</strong>
+        <span class="right"></span>
+        <button id="btnCopyLogs" class="btn">Copy</button>
+        <button id="btnClearLogs" class="btn warn">Clear</button>
+      </div>
+      <div id="logs" class="log mt8 mono"></div>
+    </div>
   </div>
 
-<script>
-/* ===========================
-   CONFIG
-=========================== */
-const CONFIG = {
-  API_BASE: 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2', // ← आपका API + Stage
-  THUMB_W: 360,
-  THUMB_ORIENT: 1,
-  FRONT_PAGE_SIZE: 10, // UI पर एक बार में कितने कार्ड दिखें
-};
-document.getElementById('apiTag').textContent = new URL(CONFIG.API_BASE).host;
-document.getElementById('stageTag').textContent = CONFIG.API_BASE.split('/').pop();
+  <script>
+  // ========= Config =========
+  const API_BASE_DEFAULT = 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
 
-/* ===========================
-   DEBUG UTILS
-=========================== */
-const $log = document.getElementById('logBox');
-const logs = [];
-function log(obj, level='info'){
-  const time = new Date().toISOString();
-  const entry = { time, level, obj };
-  logs.push(entry);
-  const line = document.createElement('div');
-  line.innerHTML = `<span class="muted">${time}</span> - <span class="kbd">${level.toUpperCase()}</span>\n` +
-                   `<pre>${(typeof obj==='string') ? obj : JSON.stringify(obj, null, 2)}</pre>`;
-  $log.appendChild(line);
-  $log.scrollTop = $log.scrollHeight;
-  console[level==='error'?'error':'log'](entry);
-}
-function clearLogs(){ logs.length = 0; $log.textContent=''; }
-async function copyLogs(){
-  const txt = logs.map(l => `${l.time} [${l.level}] ${typeof l.obj==='string'?l.obj:JSON.stringify(l.obj)}`).join('\n');
-  await navigator.clipboard.writeText(txt);
-  alert('Logs copied to clipboard');
-}
-document.getElementById('btnCopyLogs').onclick = copyLogs;
-document.getElementById('btnClearLogs').onclick = clearLogs;
+  const LS_KEY = 'wm_api_base';
+  const API_BASE = getApiBase();
+  const SEARCH_URL = `${API_BASE}/search`;
+  const THUMB_URL = `${API_BASE}/thumb`;
 
-/* ===========================
-   SAFE FETCH WRAPPER
-=========================== */
-async function apiFetch(path, { method='GET', headers={}, body=null, tryJson=true } = {}){
-  const url = `${CONFIG.API_BASE}${path}`;
-  const started = performance.now();
+  // ========= UI refs =========
+  const $ = sel => document.querySelector(sel);
+  const logsEl   = $('#logs');
+  const countEl  = $('#count');
+  const resEl    = $('#results');
+  const apiShow  = $('#apiShow');
+  const stageEl  = $('#stage');
 
-  // string body for logging
-  const bodyForLog = (typeof body==='string' ? body : body ? JSON.stringify(body) : null);
+  apiShow.textContent = API_BASE;
 
-  const opts = { method, headers:{...headers}, mode:'cors' };
-  if(body){ opts.body = (typeof body==='string'? body : JSON.stringify(body)); }
-
-  log({event:'request', url, method, headers:opts.headers, body:bodyForLog});
-
-  let res, text;
-  try{
-    res  = await fetch(url, opts);
-    text = await res.text();
-  }catch(netErr){
-    log({event:'network-error', url, message: String(netErr)}, 'error');
-    throw new Error(`Network error: ${netErr?.message || netErr}`);
+  // ========= Debug logger =========
+  function nowISO(){ return new Date().toISOString(); }
+  function log(level, msg, obj){
+    const line = `[${nowISO()}] [${level}] ${msg}` + (obj?`\n${safeJson(obj)}`:'');
+    logsEl.textContent += (logsEl.textContent ? '\n' : '') + line;
+    logsEl.scrollTop = logsEl.scrollHeight;
+    console[level==='error'?'error':'log'](line);
+  }
+  function safeJson(x){
+    try{ return JSON.stringify(x, null, 2); }catch{ return String(x) }
   }
 
-  const took = Math.round(performance.now()-started);
-  let data = null;
-  if(tryJson){
-    try{ data = text ? JSON.parse(text) : null; }catch(e){ /* not json */ }
+  function getApiBase(){
+    const saved = localStorage.getItem(LS_KEY);
+    return saved && saved.startsWith('http') ? saved : API_BASE_DEFAULT;
   }
-  log({event:'response', url, status:res.status, took_ms:took, headers:Object.fromEntries(res.headers.entries()), raw:text});
-
-  if(!res.ok){
-    const msg = (data && data.message) ? data.message : `HTTP ${res.status}`;
-    throw new Error(msg);
-  }
-  return data ?? text;
-}
-
-/* ===========================
-   PREFLIGHT (OPTIONS)
-=========================== */
-document.getElementById('btnPreflight').onclick = async ()=>{
-  try{
-    const res = await fetch(`${CONFIG.API_BASE}/search`, {
-      method:'OPTIONS',
-      mode:'cors',
-      headers:{
-        'Access-Control-Request-Method': 'POST',
-        'Origin': location.origin
-      }
-    });
-    log({event:'preflight', status:res.status, ok:res.ok, headers:Object.fromEntries(res.headers.entries())});
-    alert(`Preflight: ${res.status} ${res.ok ? 'OK' : 'FAILED'}`);
-  }catch(e){
-    log({event:'preflight-error', error:String(e)}, 'error');
-    alert(`Preflight failed: ${e.message}`);
-  }
-};
-
-/* ===========================
-   CAMERA
-=========================== */
-const $video = document.getElementById('video');
-const $camDot = document.getElementById('camDot');
-let stream=null;
-
-async function startCamera(){
-  try{
-    stream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
-    $video.srcObject = stream;
-    $camDot.classList.remove('off'); $camDot.classList.add('on');
-    log('camera started');
-  }catch(e){
-    log({camera:'error', message:e.message}, 'error');
-    alert('कैमरा नहीं चल पाया: ' + e.message);
-  }
-}
-function stopCamera(){
-  stream?.getTracks()?.forEach(t=>t.stop());
-  $video.srcObject = null;
-  $camDot.classList.add('off'); $camDot.classList.remove('on');
-  log('camera stopped');
-}
-document.getElementById('btnCamStart').onclick = startCamera;
-document.getElementById('btnCamStop').onclick = stopCamera;
-startCamera().catch(()=>{});
-
-/* ===========================
-   SEARCH
-=========================== */
-const $grid   = document.getElementById('grid');
-const $count  = document.getElementById('countWrap');
-const $more   = document.getElementById('btnMore');
-
-let currentResults = [];   // full list from server
-let shown = 0;             // how many cards drawn
-
-function parseEventIds(val){
-  return (val||'')
-    .split(',')
-    .map(s=>s.trim())
-    .filter(Boolean);
-}
-function dedupeResults(arr){
-  const seen = new Set();
-  const out=[];
-  for(const x of arr){
-    const k = x.id || x.key || JSON.stringify(x);
-    if(!seen.has(k)){ seen.add(k); out.push(x); }
-  }
-  return out;
-}
-function updateCount(count, showing){
-  $count.textContent = `मिले ${count} फ़ोटो। (दिखा रहे: ${showing})`;
-}
-function card(item){
-  const pct = Math.round((item.score || 1)*100);
-  const id  = item.id || item.photoId || '—';
-  const eventId = item.eventId || '—';
-  const key = item.key || `events/${eventId}/${id}.jpg`;
-  const thumb = `${CONFIG.API_BASE}/thumb?key=${encodeURIComponent(key)}&w=${CONFIG.THUMB_W}&orient=${CONFIG.THUMB_ORIENT}`;
-  const openFull = `${CONFIG.API_BASE}/thumb?key=${encodeURIComponent(key)}&w=1280&orient=1`;
-
-  const div = document.createElement('div');
-  div.className = 'pic';
-  div.innerHTML = `
-    <img loading="lazy" src="${thumb}" onerror="this.closest('.pic').querySelector('.noPrev').style.display='inline-block'; this.style.display='none';" />
-    <div class="rowline" style="padding:10px">
-      <span class="pill">~${pct}%</span>
-      <a class="opener" href="${openFull}" target="_blank" rel="noopener">open</a>
-      <span class="opener noPrev" style="display:none">No preview</span>
-    </div>
-    <div style="padding:0 10px 10px"><small class="muted">ID:</small> <small>${id}</small><br/>
-      <small class="muted">Event:</small> <small>${eventId}</small>
-    </div>`;
-  return div;
-}
-function drawMore(){
-  const slice = currentResults.slice(shown, shown + CONFIG.FRONT_PAGE_SIZE);
-  slice.forEach(r => $grid.appendChild(card(r)));
-  shown += slice.length;
-  updateCount(currentResults.length, shown);
-  $more.style.display = (shown < currentResults.length) ? 'inline-block' : 'none';
-}
-$more.onclick = drawMore;
-
-async function doSearch(){
-  const name   = document.getElementById('name').value.trim();
-  const phone  = document.getElementById('phone').value.trim();
-  const events = parseEventIds(document.getElementById('eventIds').value);
-  const limit  = Math.max(1, Math.min(200, +document.getElementById('limit').value || 50));
-
-  if(!name || !phone){
-    alert('कृपया नाम और मोबाइल नंबर भरें।');
-    return;
+  function setApiBase(v){
+    localStorage.setItem(LS_KEY, v);
+    location.reload();
   }
 
-  // Request body (Lambda expects name, phone, eventIds?, limit)
-  const body = { name, phone, limit };
-  if(events.length) body.eventIds = events;
-
-  // UI reset
-  $grid.innerHTML=''; shown=0; currentResults=[];
-  updateCount(0, 0);
-  $more.style.display='none';
-  document.getElementById('btnSearch').disabled = true;
-
-  try{
-    const data = await apiFetch('/search', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body
-    });
-
-    // Expect: { count, results: [...] }
-    const results = Array.isArray(data?.results) ? data.results : [];
-    currentResults = dedupeResults(results);
-    updateCount(currentResults.length, 0);
-    drawMore();
-
-    if(!currentResults.length){
-      alert('कोई मैच नहीं मिला।');
+  // ========= HTTP helper =========
+  async function fetchJSON(url, opts={}){
+    log('info', 'request', { url, method: opts.method||'GET', headers: opts.headers, body: opts.body });
+    let resp;
+    try{
+      resp = await fetch(url, {
+        mode: 'cors',            // CORS enabled
+        credentials: 'omit',     // no cookies
+        cache: 'no-store',
+        ...opts
+      });
+    }catch(e){
+      // network/preflight block
+      log('error', 'preflight-error', { error: String(e) });
+      alert(`Preflight failed: ${e.message || e}`);
+      throw e;
     }
-  }catch(e){
-    log({event:'search-error', message:e.message}, 'error');
-    alert(`खोज में दिक्कत: ${e.message}`);
-  }finally{
-    document.getElementById('btnSearch').disabled = false;
-  }
-}
-document.getElementById('btnSearch').onclick = doSearch;
-document.getElementById('btnClear').onclick = ()=>{
-  document.getElementById('name').value='';
-  document.getElementById('phone').value='';
-  document.getElementById('eventIds').value='';
-  document.getElementById('limit').value='50';
-  $grid.innerHTML=''; shown=0; currentResults=[]; updateCount(0,0);
-};
 
-</script>
+    const text = await resp.text();
+    const contentType = (resp.headers.get('content-type')||'').toLowerCase();
+    let data;
+    if(contentType.includes('application/json')){
+      try{ data = JSON.parse(text) }catch{ data = { raw:text } }
+    }else{
+      data = { raw:text };
+    }
+
+    log('info', 'response', { url, status: resp.status, took_ms: null, headers: Object.fromEntries(resp.headers.entries()), raw: text.slice(0, 3000) });
+
+    if(!resp.ok){
+      const msg = data && data.message ? data.message : `HTTP ${resp.status}`;
+      alert(`खोज में दिक्कत: ${msg}`);
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  async function jpost(url, payload){
+    return fetchJSON(url, {
+      method:'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload||{})
+    });
+  }
+
+  // ========= Thumbnail URL builder =========
+  function makeThumbUrl({ eventId, key, width=720, orient=1 }){
+    const p = new URLSearchParams({
+      eventId,
+      key,
+      w: String(width),
+      orient: String(orient),
+      failOn: 'none',     // << important: string value
+    });
+    return `${THUMB_URL}?${p.toString()}`;
+  }
+
+  // ========= Rendering =========
+  function pct(score){
+    // server may send -1..1 OR 0..1; just show absolute percentage
+    if(score === null || score === undefined) return '~';
+    const v = Math.abs(Number(score));
+    if(!isFinite(v)) return '~';
+    return (v<=1 ? (v*100) : v).toFixed(0)+'%';
+  }
+
+  function renderResults(items){
+    resEl.innerHTML = '';
+    if(!Array.isArray(items) || !items.length){
+      countEl.textContent = '0';
+      return;
+    }
+    countEl.textContent = String(items.length);
+
+    items.slice(0, 50).forEach(it=>{
+      const id      = it.id || it.photoId || it.key || '-';
+      const key     = it.key || it.photoKey || '';
+      const eventId = it.eventId || it.event || '';
+      const score   = it.score;
+      const percent = pct(score);
+
+      const card   = document.createElement('div');
+      card.className = 'card';
+
+      // image
+      const img = document.createElement('img');
+      img.className = 'thumb';
+      img.alt = 'thumbnail';
+      if(eventId && key){
+        img.src = makeThumbUrl({ eventId, key, width: 480, orient: 1 });
+      }else{
+        img.alt = 'No preview';
+      }
+      img.onerror = ()=>{ img.src=''; img.alt='No preview'; };
+
+      // body
+      const body = document.createElement('div');
+      body.className = 'card-body mono';
+
+      const line1 = document.createElement('div');
+      line1.innerHTML = `<span class="pill ok">~${percent}</span> <span class="pill">match</span>`;
+      const line2 = document.createElement('div');
+      line2.className = 'small';
+      line2.innerHTML = `<b>ID:</b> ${escapeHtml(id)}`;
+      const line3 = document.createElement('div');
+      line3.className = 'small';
+      line3.innerHTML = `<b>Event:</b> ${escapeHtml(eventId)}`;
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const btnOpen = document.createElement('button');
+      btnOpen.className = 'btn';
+      btnOpen.textContent = 'open';
+      btnOpen.onclick = ()=>{
+        if(eventId && key){
+          const u = makeThumbUrl({ eventId, key, width: 1280, orient: 1 });
+          window.open(u, '_blank','noopener');
+        }
+      };
+
+      const btnCopy = document.createElement('button');
+      btnCopy.className = 'btn';
+      btnCopy.textContent = 'copy id';
+      btnCopy.onclick = ()=>{
+        navigator.clipboard.writeText(id);
+      };
+
+      actions.append(btnOpen, btnCopy);
+      body.append(line1, line2, line3, actions);
+
+      card.append(img, body);
+      resEl.append(card);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ========= Search =========
+  async function doSearch(){
+    const name  = $('#tbName').value.trim();
+    const phone = $('#tbPhone').value.trim();
+    const limit = Math.max(1, Math.min(200, Number($('#tbLimit').value||50)));
+    const events = ($('#tbEvents').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+
+    if(!name || !phone){
+      alert('कृपया नाम और मोबाइल नंबर भरें');
+      return;
+    }
+
+    const payload = { name, phone, limit };
+    if(events.length) payload.eventIds = events;
+
+    const data = await jpost(SEARCH_URL, payload);
+    // server body format: { count, results }
+    const items = data.results || [];
+    renderResults(items);
+  }
+
+  // ========= Handlers =========
+  $('#btnSearch').onclick = doSearch;
+  $('#btnClear').onclick = ()=>{
+    $('#tbName').value = '';
+    $('#tbPhone').value = '';
+    $('#tbEvents').value = '';
+    $('#tbLimit').value = 50;
+    resEl.innerHTML = ''; countEl.textContent = '0';
+  };
+
+  // Debug panel
+  const debugPanel = $('#debugPanel');
+  $('#btnToggleDebug').onclick = ()=>{
+    debugPanel.style.display = debugPanel.style.display==='none' ? '' : 'none';
+  };
+  $('#btnCopyLogs').onclick = ()=>{
+    navigator.clipboard.writeText(logsEl.textContent||'');
+  };
+  $('#btnClearLogs').onclick = ()=>{
+    logsEl.textContent = '';
+  };
+
+  // API Edit
+  const apiEdit = $('#apiEditPanel');
+  $('#btnEditApi').onclick = ()=>{
+    $('#tbApiBase').value = API_BASE;
+    apiEdit.style.display = '';
+  };
+  $('#btnSaveApi').onclick = ()=>{
+    const v = $('#tbApiBase').value.trim();
+    if(!v.startsWith('http')){ alert('Invalid URL'); return; }
+    setApiBase(v);
+  };
+  $('#btnCancelApi').onclick = ()=>{ apiEdit.style.display = 'none'; };
+
+  $('#btnClearCache').onclick = ()=>{
+    localStorage.removeItem(LS_KEY);
+    location.reload();
+  };
+
+  // ========= Startup =========
+  log('info','camera started'); // (placeholder log to match your earlier UI)
+
+  // Fill from querystring for quick test (?name=..&phone=..&event=EVT_2025_08_12)
+  const qs = new URLSearchParams(location.search);
+  if(qs.get('name'))  $('#tbName').value  = qs.get('name');
+  if(qs.get('phone')) $('#tbPhone').value = qs.get('phone');
+  if(qs.get('event')) $('#tbEvents').value= qs.get('event');
+
+  </script>
 </body>
 </html>
