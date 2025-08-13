@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WedMatch – Face Search</title>
   <style>
-    body{font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, 'Apple Color Emoji','Segoe UI Emoji';margin:0;background:#fafafa;color:#222}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans,'Apple Color Emoji','Segoe UI Emoji';margin:0;background:#fafafa;color:#222}
     header{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;padding:10px 14px;z-index:10}
     main{display:grid;grid-template-columns:420px 1fr;gap:18px;max-width:1300px;margin:16px auto;padding:0 14px}
     .card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
@@ -18,7 +18,7 @@
     .btn.secondary{background:#f3f4f6;color:#111;border:1px solid #e5e7eb}
     .hint{font-size:12px;color:#666}
     video,canvas,.snap{width:100%;border-radius:12px;background:#000}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(240px,1fr));gap:14px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
     .result{border:1px solid #eee;border-radius:12px;overflow:hidden;background:#fff}
     .result .meta{padding:8px 10px;border-top:1px solid #f2f2f2}
     .pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:#f5f5f5}
@@ -188,6 +188,41 @@ async function downscaleIfNeeded(dataUrl){
   }
 }
 
+// ---------- Thumb helpers (encode + fallback) ----------
+function thumbUrl(key, w = 360, orient = 1){
+  return `${ENDPOINTS.thumb}?key=${encodeURIComponent(key)}&w=${w}&orient=${orient}`;
+}
+
+function buildImgForKey(key, w = 360){
+  const img = new Image();
+  img.className = 'thumb';
+  img.alt = key || 'photo';
+  img.referrerPolicy = 'no-referrer';
+  img.decoding = 'async';
+  img.loading = 'lazy';
+
+  // 1st try: thumbnail
+  img.src = thumbUrl(key, w, 1);
+
+  // fallback chain: /download -> SVG placeholder
+  img.onerror = () => {
+    img.onerror = () => {
+      img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${Math.round(w*0.75)}">
+`+
+        `<rect width="100%" height="100%" fill="#f2f2f2"/>
+`+
+        `<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"`+
+        ` font-family="system-ui,Segoe UI,Roboto,Arial" font-size="14" fill="#9aa">No preview</text>`+
+        `</svg>`
+      );
+    };
+    img.src = `${ENDPOINTS.download}?key=${encodeURIComponent(key)}&disposition=inline`;
+  };
+
+  return img;
+}
+
 // ---------- Network ----------
 async function fetchJSON(url, body){
   const res = await fetch(url, {
@@ -207,16 +242,14 @@ function renderResults(items){
     const div = document.createElement('div');
     div.className = 'result';
 
-    const img = document.createElement('img');
-    img.className = 'thumb';
-    img.alt = it.photoId || it.key || 'photo';
-    const key = it.key || it.s3Key || it.photoKey; // defensive
-    img.src = `${ENDPOINTS.thumb}?key=${encodeURIComponent(key)}&w=360&orient=1`;
+    const key = it.key || it.s3Key || it.photoKey || it.objectKey || it.photoId;
+    const img = buildImgForKey(key, 360);
 
     const meta = document.createElement('div');
     meta.className = 'meta';
+    const pct = Math.round((it.score || it.similarity || 1) * 100);
     meta.innerHTML = `
-      <div><span class="pill">~${Math.round((it.score || it.similarity || 1)*100)}%</span> match</div>
+      <div><span class="pill">~${pct}%</span> match</div>
       <div class="muted" style="word-break:break-all">ID: ${it.photoId || key}</div>
     `;
 
@@ -244,7 +277,7 @@ async function doSearch(next=false){
       name: els.name.value.trim() || undefined,
       phone: els.phone.value.trim() || undefined,
       eventIds: els.eventIds.value.trim() || undefined,
-      image: imageDataURL,             // *** IMPORTANT *** – backend expects full data URL
+      image: imageDataURL,             // backend expects FULL data URL (data:image/jpeg;base64,xxxx)
       limit: 12,
     };
 
@@ -260,7 +293,8 @@ async function doSearch(next=false){
     if (!next) els.results.innerHTML = '';
     renderResults(json.items || json.results || []);
 
-    setStatus(`मिले ${ (json.items?.length || json.results?.length || 0) } फोटो।`);
+    const shown = (json.items?.length || json.results?.length || 0);
+    setStatus(`मिले ${shown} फोटो।`);
     els.more.style.display = nextToken ? 'inline-flex' : 'none';
   }catch(err){
     console.error('search error', err);
