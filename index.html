@@ -5,43 +5,27 @@
   <title>Face Search</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    :root{
-      --brand:#ff7a18; --brand-ink:#ffffff; --bg:#fff8f0; --card:#ffffff; --ink:#1f2328; --muted:#6b7280; --border:#e5e7eb; --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px -16px rgba(0,0,0,.15); --ok:#0f9d58; --danger-ink:#b00020; --radius:14px; --warn:#b08900;
-    }
-    @media (prefers-color-scheme: dark){ :root{ --brand:#ff8a3d; --brand-ink:#0b0b0b; --bg:#0b0b0b; --card:#111418; --ink:#e7e7e7; --muted:#9aa0a6; --border:#23272e; --shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px -14px rgba(0,0,0,.45); --ok:#34d399; --danger-ink:#ffb4bd; --warn:#ffd166; } }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{ margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
-    header{ position:sticky;top:0;z-index:10; background:linear-gradient(90deg,var(--brand),#ffa149); color:var(--brand-ink); padding:14px clamp(14px,3vw,24px); font-weight:800; letter-spacing:.2px; box-shadow: 0 1px 0 rgba(0,0,0,.06); }
+    :root{ --brand:#ff7a18; --brand-ink:#fff; --bg:#fff8f0; --card:#fff; --ink:#1f2328; --muted:#6b7280; --border:#e5e7eb; --shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px -16px rgba(0,0,0,.15); --ok:#0f9d58; --radius:14px }
+    *{box-sizing:border-box} html,body{height:100%} body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif}
+    header{position:sticky;top:0;z-index:10;background:linear-gradient(90deg,var(--brand),#ffa149);color:var(--brand-ink);padding:14px clamp(14px,3vw,24px);font-weight:800}
     main{padding:clamp(12px,2.8vw,22px);max-width:1080px;margin:auto}
-    .layout{display:grid;gap:clamp(10px,2.2vw,16px);grid-template-columns: 1.15fr .85fr}
-    @media (max-width: 980px){.layout{grid-template-columns:1fr}}
+    .layout{display:grid;gap:clamp(10px,2.2vw,16px);grid-template-columns:1.15fr .85fr} @media(max-width:980px){.layout{grid-template-columns:1fr}}
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
     .card .hd{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:700;display:flex;align-items:center;gap:8px}
     .card .bd{padding:clamp(12px,2.4vw,18px)}
-    label{display:block;margin:12px 0 6px;font-weight:650;color:var(--ink)}
-    input[type=text], input[type=tel], input[type=file]{ width:100%; padding:13px 14px; border:1px solid var(--border); border-radius:12px; background:transparent; color:inherit; font:inherit; outline:none; transition:border-color .15s ease, box-shadow .15s ease; }
-    input[type=file]{padding:10px 12px}
-    input:focus-visible{ border-color:color-mix(in srgb, var(--brand) 60%, var(--border)); box-shadow:0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px; background:var(--brand);color:var(--brand-ink); border:0;border-radius:12px;padding:13px 18px;font-weight:800;cursor:pointer; transition:transform .06s ease, filter .15s ease, box-shadow .15s ease; box-shadow:var(--shadow); -webkit-tap-highlight-color:transparent;}
-    .btn:hover{filter:brightness(1.02)} .btn:active{transform:translateY(1px)} .btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none} .btn.gray{background:color-mix(in srgb, var(--ink) 92%, transparent); color:#fff}
+    label{display:block;margin:12px 0 6px;font-weight:650}
+    input[type=text],input[type=tel],input[type=file]{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:transparent;color:inherit;font:inherit;outline:none}
     .row{display:flex;gap:12px;flex-wrap:wrap} .row>div{flex:1 1 260px}
-    .hint{color:var(--muted);font-size:.92rem} .ok{color:var(--ok);font-weight:700}
-    .danger{color:var(--danger-ink);background:color-mix(in srgb, var(--danger-ink) 8%, transparent); border:1px solid color-mix(in srgb, var(--danger-ink) 35%, var(--border));padding:12px;border-radius:12px}
-    .warn{color:var(--warn)} details.err{margin-top:6px}
-    #video{width:100%;aspect-ratio:4/3;background:#000;border-radius:14px} #canvas{width:100%;display:none;border-radius:14px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px} @media (max-width:560px){.grid{grid-template-columns:1fr}}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--brand);color:var(--brand-ink);border:0;border-radius:12px;padding:13px 18px;font-weight:800;cursor:pointer;box-shadow:var(--shadow)}
+    .btn.gray{background:#5a5f69;color:#fff} .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
     .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f3f3f3;border-radius:12px;border:1px solid var(--border)}
-    .cardR{padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
-    .meta{font-size:.92rem;color:color-mix(in srgb, var(--ink) 88%, transparent);margin-top:8px}
-    .muted{color:var(--muted)} .msg{padding:12px;border:1px dashed var(--border);border-radius:12px;color:inherit;background:color-mix(in srgb, var(--ink) 3%, transparent)}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:color-mix(in srgb, var(--brand) 14%, transparent); font-size:.8rem;font-weight:700;color:color-mix(in srgb, var(--brand) 90%, black)}
-    .stat{margin:10px 0 0 0}
-    @media (max-width:480px){ header{padding:12px 14px;font-size:1.02rem} .btn{width:100%} }
-    @media (prefers-reduced-motion: reduce){ .btn{transition:none} }
-    ::selection{background:color-mix(in srgb, var(--brand) 28%, transparent)} :focus-visible{outline:3px solid color-mix(in srgb, var(--brand) 28%, transparent);outline-offset:2px}
-    #debug{display:none;margin-top:16px} #debug.active{display:block} #tests{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;white-space:pre-wrap;background:color-mix(in srgb, var(--ink) 4%, transparent);border:1px solid var(--border);border-radius:12px;padding:12px}
+    .meta{font-size:.92rem;color:#68707a;margin-top:8px}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#ffe4ce;color:#b35500;font-weight:700;font-size:.8rem}
+    .ok{color:var(--ok);font-weight:700}
+    .muted{color:var(--muted)} .msg{padding:12px;border:1px dashed var(--border);border-radius:12px;background:rgba(0,0,0,.02)}
+    #video{width:100%;aspect-ratio:4/3;background:#000;border-radius:14px} #canvas{width:100%;display:none;border-radius:14px}
+    #seeMore{margin-top:12px;width:100%}
   </style>
 </head>
 <body>
@@ -62,34 +46,32 @@
             </div>
           </div>
 
-          <label>Event IDs <span class="muted">(comma-separated, optional)</span></label>
-          <input id="eventIds" type="text" placeholder="उदा: EVT_2025_08_12, demo-2025-01">
-          <div class="hint">एक ID दें तो उसी event में खोज। कई IDs कॉमा से अलग दें तो multi-event खोज।</div>
+          <details id="adv" style="margin:6px 0 8px"><summary class="muted">Advanced (optional)</summary>
+            <label>Event IDs <span class="muted">(कॉमा से अलग; खाली छोड़ें—ऑटो)</span></label>
+            <input id="eventIds" type="text" placeholder="उदा: EVT_2025_08_12, demo-2025-01">
+          </details>
 
           <label class="stat">सेल्फी कैमरा</label>
           <video id="video" playsinline autoplay muted></video>
           <canvas id="canvas"></canvas>
 
-          <div class="actions">
+          <div class="row" style="margin-top:10px">
             <button id="btnSnap" class="btn">सेल्फ़ी लें</button>
             <button id="btnRetake" class="btn gray" type="button">दोबारा लें</button>
           </div>
 
-          <div class="stat"><span id="selfieStatus" class="muted">सेल्फ़ी तैयार करें या फ़ाइल चुनें।</span></div>
+          <div class="muted" id="selfieStatus" style="margin-top:8px">सेल्फ़ी तैयार करें या फ़ाइल चुनें।</div>
 
-          <label class="stat">या फ़ाइल चुनें</label>
+          <label class="stat" style="margin-top:12px">या फ़ाइल चुनें</label>
           <input id="fileInput" type="file" accept="image/*">
 
-          <div class="hint" style="margin:10px 0 4px">PNG/WebP → JPEG auto. * मोबाइल पर कैमरा अपने-आप खुलेगा (Allow दें)।</div>
-
-          <div class="actions" style="margin-top:12px">
+          <div class="row" style="margin-top:12px">
             <button id="btnSearch" class="btn" style="min-width:160px">Search</button>
-            <button id="btnRunTests" class="btn gray" type="button" title="Self-tests (debug only)">Run Tests</button>
+            <button id="btnRunTests" class="btn gray" type="button" title="Self-tests">Run Tests</button>
           </div>
 
-          <div id="status" class="stat"></div>
+          <div id="status" style="margin-top:10px"></div>
           <details id="errBox" class="err"><summary>एरर डीटेल्स</summary><pre id="errText" style="white-space:pre-wrap"></pre></details>
-          <div id="debug"><div class="hd" style="border:0;padding-left:0">Debug</div><div id="tests"></div></div>
         </div>
       </section>
 
@@ -98,7 +80,7 @@
         <div class="bd">
           <div id="found" class="ok" style="display:none"></div>
           <div id="results" class="grid"></div>
-<div id="pager" style="margin-top:12px;display:none"><button id="btnMore" class="btn gray" type="button">और दिखाएँ</button></div>
+          <button id="seeMore" class="btn gray" style="display:none">और दिखाएँ</button>
           <div id="empty" class="msg" style="display:none">कोई फोटो नहीं मिला।</div>
         </div>
       </section>
@@ -106,129 +88,135 @@
   </main>
 
 <script>
-/* ====== CONFIG ====== */
-const API_BASE = param('api') || 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
-const DEFAULT_EVENT_ID = param('event') || 'EVT_2025_08_12'; // आपके इवेंट के लिए प्रीफिल
-const DEFAULT_SIM = Number(param('sim') || 70);
-const PAGE_SIZE = 10;
-const DEBUG_MODE = param('debug') === '1';
+// ===== CONFIG =====
+const API_BASE = 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
+const DEFAULT_SIM = 70;
+const PAGE_SIZE  = 10;
 
-/* ====== DOM ====== */
-const $ = sel => document.querySelector(sel);
+// ===== DOM =====
+const $ = s => document.querySelector(s);
 const nameEl=$('#name'), mobileEl=$('#mobile'), eventEl=$('#eventIds');
 const video=$('#video'), canvas=$('#canvas'), fileEl=$('#fileInput');
-const btnSnap=$('#btnSnap'), btnRetake=$('#btnRetake'), btnSearch=$('#btnSearch'), btnRunTests=$('#btnRunTests'), btnMore=$('#btnMore'); const pagerEl=$('#pager');
-const selfieStatus=$('#selfieStatus'), resultsEl=$('#results'), emptyEl=$('#empty'), foundEl=$('#found');
-const errBox=$('#errBox'), errText=$('#errText'), statusEl=$('#status'), debugWrap=$('#debug'), testsEl=$('#tests');
+const btnSnap=$('#btnSnap'), btnRetake=$('#btnRetake'), btnSearch=$('#btnSearch'), btnRunTests=$('#btnRunTests');
+const resultsEl=$('#results'), emptyEl=$('#empty'), foundEl=$('#found'), seeMoreBtn=$('#seeMore');
+const errBox=$('#errBox'), errText=$('#errText'), statusEl=$('#status');
 
-/* ====== STATE ====== */
-const state = { stream:null, imageBase64:'', imgBytes:0, lastFileName:'', all:[], page:1 };
+// ===== STATE =====
+const state={ stream:null, imageBase64:'', imgBytes:0, lastFileName:'', allItems:[], page:0 };
 
-/* ====== HELPERS ====== */
-function param(k){ return new URL(location.href).searchParams.get(k); }
+// ===== HELPERS =====
 function stripDataUrl(u){ const i=u.indexOf(','); return i>-1?u.slice(i+1):u; }
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
-JSON.parseSafe=(s)=>{ try{return JSON.parse(s);}catch{return {}} };
-function parseEventInput(s){ const raw=(s||'').trim(); if(!raw) return {eventId:''}; const parts=raw.split(',').map(t=>t.trim()).filter(Boolean); return parts.length<=1 ? {eventId:parts[0]||''} : {eventId:'', eventIds:parts}; }
-function isHttpUrl(x){ return typeof x==='string' && /^https?:\/\//i.test(x); }
-
-/* ====== CAMERA ====== */
-async function startCamera(){
-  try{ state.stream?.getTracks()?.forEach(t=>t.stop()); const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false}); state.stream=stream; video.srcObject=stream; await video.play().catch(()=>{}); }
-  catch(err){ console.warn('camera error',err); statusMsg('कैमरा उपलब्ध नहीं। फ़ाइल से भी खोज कर सकते हैं।','warn'); }
-}
-function stopCamera(){ try{state.stream?.getTracks()?.forEach(t=>t.stop());}catch{} video.srcObject=null; }
-function snapshot(){ const w=video.videoWidth||720, h=video.videoHeight||720; canvas.width=w;canvas.height=h; const ctx=canvas.getContext('2d'); ctx.drawImage(video,0,0,w,h); const dataUrl=canvas.toDataURL('image/jpeg',.9); state.imageBase64=stripDataUrl(dataUrl); state.imgBytes=Math.round((state.imageBase64.length*3)/4); }
-
-/* ====== FILE → BASE64 ====== */
-function fileToDataURL(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); }); }
-async function useFile(file){ try{ const dataUrl=await fileToDataURL(file); const img=new Image(); await new Promise((res,rej)=>{ img.onload=res; img.onerror=rej; img.src=dataUrl; }); const w=img.width||720,h=img.height||720; canvas.width=w;canvas.height=h; const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h); const jpeg=canvas.toDataURL('image/jpeg',.9); state.imageBase64=stripDataUrl(jpeg); state.imgBytes=Math.round((state.imageBase64.length*3)/4); canvas.style.display='block'; video.style.display='none'; selfieStatus.textContent='सेल्फ़ी तैयार ✓'; } catch(err){ showErr('फ़ाइल पढ़ने में समस्या',err); }}
-
-/* ====== UI EVENTS ====== */
-btnSnap.addEventListener('click', async e=>{ e.preventDefault(); if(!video.srcObject){ await startCamera(); await sleep(200);} snapshot(); canvas.style.display='block'; video.style.display='none'; selfieStatus.textContent=`सेल्फ़ी तैयार ✓ (${state.imgBytes} bytes)`; });
-btnRetake.addEventListener('click', e=>{ e.preventDefault(); canvas.style.display='none'; video.style.display='block'; state.imageBase64=''; selfieStatus.textContent='सेल्फ़ी फिर से लें या फ़ाइल चुनें।'; });
-fileEl.addEventListener('change', e=>{ const f=e.target.files?.[0]; if(f){ state.lastFileName=f.name; useFile(f);} });
-btnSearch.addEventListener('click', e=>{ e.preventDefault(); doSearch(); });
-btnRunTests.addEventListener('click', e=>{ e.preventDefault(); runTests(); });
-
-/* ====== SEARCH ====== */
 function validMobile(m){ return /^\d{10}$/.test((m||'').trim()); }
-function statusMsg(msg,type='info'){ statusEl.textContent=msg||''; statusEl.className= type==='warn'?'warn':''; }
+function statusMsg(msg,type){ statusEl.innerHTML = type==='err'?`<div style="color:#b00020">${msg}</div>`:msg; }
+function parseEventInput(raw){ raw=(raw||'').trim(); if(!raw) return {}; const arr=raw.split(',').map(t=>t.trim()).filter(Boolean); return arr.length<=1? {eventId:arr[0]} : {eventIds:arr}; }
+function getId(r){ return r.photoId || r.id || r.imageId || r.photoID || ''; }
+function getScore(r){ const v=r.similarity ?? r.score ?? r.confidence ?? 0; return Math.round(v*100)/100; }
+function evFrom(r){ if(r.eventId) return r.eventId; if(r.s3Key && r.s3Key.startsWith('events/')) return r.s3Key.split('/')[1]; return ''; }
+function primaryKey(r){ return r.s3Key || r.key || r.s3key || r.path || r.urlKey || ''; }
 
-async function fetchSmart(url,opt={},timeoutMs=20000){ const ctrl=new AbortController(); const id=setTimeout(()=>ctrl.abort('timeout'),timeoutMs); try{ const resp=await fetch(url,{...opt,signal:ctrl.signal}); clearTimeout(id); const ctype=(resp.headers.get('content-type')||'').toLowerCase(); let data; try{ data=ctype.includes('application/json')? await resp.json() : await resp.text(); }catch{ data='JSON parse error'; } return { ok:resp.ok, status:resp.status, data }; } catch(err){ clearTimeout(id); const reason=(err && (err.name==='AbortError'||err==='timeout'))?'Request timed out':(err&&err.message)?err.message:String(err); return { ok:false, status:0, data:reason }; } }
+// ===== CAMERA =====
+async function startCamera(){
+  try{
+    state.stream?.getTracks()?.forEach(t=>t.stop());
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    state.stream=stream; video.srcObject=stream; await video.play().catch(()=>{});
+  }catch{ statusMsg('कैमरा उपलब्ध नहीं। फ़ाइल से भी खोज हो जाएगी।'); }
+}
+function snapshot(){
+  const w=video.videoWidth||720,h=video.videoHeight||720;
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(video,0,0,w,h);
+  const dataUrl=canvas.toDataURL('image/jpeg',.9);
+  state.imageBase64=stripDataUrl(dataUrl);
+  state.imgBytes=Math.round((state.imageBase64.length*3)/4);
+  canvas.style.display='block'; video.style.display='none';
+}
+async function useFile(file){
+  const dataUrl=await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); });
+  const img=new Image(); await new Promise((res,rej)=>{ img.onload=res; img.onerror=rej; img.src=dataUrl; });
+  const w=img.width||720,h=img.height||720; canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+  const jpeg=canvas.toDataURL('image/jpeg',.9);
+  state.imageBase64=stripDataUrl(jpeg); state.imgBytes=Math.round((state.imageBase64.length*3)/4);
+  canvas.style.display='block'; video.style.display='none';
+}
+
+// ===== EVENTS =====
+btnSnap.addEventListener('click', e=>{ e.preventDefault(); if(!video.srcObject) startCamera(); snapshot(); statusMsg(`सेल्फ़ी तैयार ✓ (${state.imgBytes} bytes)`); });
+btnRetake.addEventListener('click', e=>{ e.preventDefault(); canvas.style.display='none'; video.style.display='block'; state.imageBase64=''; statusMsg('सेल्फ़ी फिर से लें या फ़ाइल चुनें।'); });
+fileEl.addEventListener('change', e=>{ const f=e.target.files?.[0]; if(f) useFile(f); });
+btnSearch.addEventListener('click', e=>{ e.preventDefault(); doSearch(); });
+seeMoreBtn.addEventListener('click', e=>{ e.preventDefault(); renderNextPage(); });
+
+// ===== NET =====
+async function fetchJSON(url,opt={}){ const r=await fetch(url,opt); const ct=(r.headers.get('content-type')||'').toLowerCase(); const d=ct.includes('json')? await r.json(): await r.text(); if(!r.ok) throw new Error(typeof d==='string'?d:JSON.stringify(d)); return d; }
+
+// ===== SEARCH =====
+function dedupe(list){ const map=new Map(); for(const it of (list||[])){ const k=(primaryKey(it) || (evFrom(it)+'|'+getId(it))).toLowerCase(); if(k && !map.has(k)) map.set(k,it); } return [...map.values()]; }
 
 async function doSearch(){
   errBox.open=false; errText.textContent='';
-  const nm=(nameEl.value||'').trim(); const mb=(mobileEl.value||'').trim(); const ev=parseEventInput((eventEl.value||'').trim());
-  if(!nm) return showMsg('कृपया नाम भरें।'); if(!validMobile(mb)) return showMsg('कृपया 10 अंकों का मोबाइल भरें।');
-  if(!state.imageBase64){ if(video.srcObject){ snapshot(); canvas.style.display='block'; video.style.display='none'; } }
-  if(!state.imageBase64) return showMsg('कृपया सेल्फ़ी लें या फ़ाइल चुनें।');
+  const nm=(nameEl.value||'').trim(); const mb=(mobileEl.value||'').trim(); if(!nm) return statusMsg('कृपया नाम भरें।','err'); if(!validMobile(mb)) return statusMsg('कृपया 10 अंकों का मोबाइल भरें।','err');
+  if(!state.imageBase64){ if(video.srcObject){ snapshot(); } }
+  if(!state.imageBase64) return statusMsg('कृपया सेल्फ़ी लें या फ़ाइल चुनें।','err');
 
-  btnSearch.disabled=true; showMsg('खोज जारी है…');
-  const body={ ...ev, imageBase64:state.imageBase64, name:nm, mobile:mb, sim:DEFAULT_SIM };
-  const r=await fetchSmart(API_BASE+'/search',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
-  if(!r.ok){ const hint=r.status===0? 'नेटवर्क/CORS/टाइमआउट—URL, इंटरनेट या सर्वर CORS जाँचे।' : `HTTP ${r.status}`; showMsg(`सर्वर में दिक्कत: ${hint}`,true); errText.textContent=(typeof r.data==='string')? r.data : JSON.stringify(r.data,null,2); errBox.open=true; btnSearch.disabled=false; return; }
-  const payload=(typeof r.data==='string')? JSON.parseSafe(r.data) : r.data; const items=payload?.items || payload?.results || payload?.matches || [];
-  renderResults(items);
-const n = state.all.length|0; foundEl.style.display='block'; foundEl.textContent=`मिले ${n} फोटो।`; showMsg(''); btnSearch.disabled=false;
+  btnSearch.disabled=true; statusMsg('खोज जारी है…');
+  const evObj=parseEventInput(eventEl.value);
+  const body={ ...evObj, imageBase64:state.imageBase64, name:nm, mobile:mb, sim:DEFAULT_SIM };
+  try{
+    const data=await fetchJSON(API_BASE+'/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const raw=data?.items || data?.results || data?.matches || [];
+    state.allItems = dedupe(raw); state.page=0;
+    foundEl.style.display='block'; foundEl.textContent=`मिले ${state.allItems.length} फोटो।`;
+    resultsEl.innerHTML=''; emptyEl.style.display= state.allItems.length? 'none':'block';
+    renderNextPage(true);
+    statusMsg('');
+  }catch(err){ statusMsg('सर्वर में दिक्कत: '+err.message,'err'); errText.textContent=err.stack||String(err); errBox.open=true; }
+  finally{ btnSearch.disabled=false; }
 }
 
-function showMsg(msg,isErr=false){ if(isErr){ statusEl.innerHTML=`<div class="danger">${msg}</div>`; } else { statusEl.textContent=msg; } }
-function showErr(title,err){ console.error(title,err); showMsg('नेटवर्क/ब्राउज़र एरर। बाद में फिर प्रयास करें।',true); errText.textContent=(err&&err.stack)?err.stack:String(err); errBox.open=true; }
-
-/* ====== PREVIEW (presign via /download returning {url}) ====== */
-function getId(r){ return r.photoId || r.id || r.imageId || ''; }
-function getScore(r){ const v=r.similarity ?? r.score ?? r.confidence ?? 0; return Math.round(v*100)/100; }
-function primaryKey(r){ return r.s3Key || r.key || r.s3key || r.path || r.urlKey || ''; }
-function buildKeyCandidates(r){
-  const prim=primaryKey(r); if(prim) return [prim];
-  const ev=r.eventId || r.event || (Array.isArray(r.events)?r.events[0]:DEFAULT_EVENT_ID); const pid=getId(r); const keys=[];
-  if(ev && pid){
-    // कोशिश: बिना originals और originals/ दोनों
-    ['','.jpg','.JPG','.jpeg','.JPEG','.png','.webp'].forEach(ext=>{ if(ext) keys.push(`events/${ev}/${pid}${ext}`); });
-    ['','.jpg','.JPG','.jpeg','.JPEG','.png','.webp'].forEach(ext=>{ if(ext) keys.push(`events/${ev}/originals/${pid}${ext}`); });
-  }
-  return keys;
-}
-async function presign(key){ const r=await fetchSmart(API_BASE+'/download?key='+encodeURIComponent(key),{method:'GET'}); if(r.ok){ const d=(typeof r.data==='string')? JSON.parseSafe(r.data):r.data; if(isHttpUrl(d?.url)) return d.url; } throw new Error('presign failed'); }
-async function loadFromKeys(img, list){ for(const key of list){ try{ const url=await presign(key); img.src=url; img.dataset.loaded='1'; return; } catch(e){} } // fallback placeholder
-  const ph=document.createElement('div'); ph.className='thumb'; ph.style.display='flex'; ph.style.alignItems='center'; ph.style.justifyContent='center'; ph.style.color='#888'; ph.textContent='No preview'; img.replaceWith(ph); }
-function cardHTML(r){
-  const pid=getId(r); const sim=getScore(r); const direct=r.previewUrl || r.url; const directOk=isHttpUrl(direct);
-  const keys=buildKeyCandidates(r); const first=keys[0]||''; const rest=JSON.stringify(keys.slice(1));
-  const imgPart = directOk
-    ? `<img class="thumb" loading="lazy" alt="${pid||'photo'}" src="${direct}">`
-    : (first
-      ? `<img class="thumb" loading="lazy" alt="${pid||'photo'}" data-first="${encodeURIComponent(first)}" data-keys='${rest}'>`
-      : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:#888">No preview</div>`);
-  return `
-    <div class="cardR">
-      ${imgPart}
-      <div class="meta">
-        ${pid?`<div><b>ID:</b> ${pid}</div>`:''}
-        ${sim?`<div><span class="pill">~${sim}%</span> match</div>`:''}
-        ${primaryKey(r)?`<div class="muted" style="word-break:break-all">${primaryKey(r)}</div>`:''}
-      </div>
-    </div>`;
-}
+// ===== THUMB + DOWNLOAD FALLBACK =====
+async function presign(key){ const d=await fetchJSON(API_BASE+'/download?key='+encodeURIComponent(key)); if(d&&/^https?:\/\//i.test(d.url)) return d.url; throw new Error('presign failed'); }
+function buildKeyCandidates(r){ const pid=getId(r); const ev=evFrom(r); const keys=[]; const prim=primaryKey(r); if(prim) keys.push(prim); if(ev && pid){ ['','.jpg','.jpeg','.png','.webp','.JPG','.JPEG'].forEach(ext=>{ if(ext) keys.push(`events/${ev}/${pid}${ext}`); }); ['','.jpg','.jpeg','.png','.webp','.JPG','.JPEG'].forEach(ext=>{ if(ext) keys.push(`events/${ev}/originals/${pid}${ext}`); }); } return keys.filter(Boolean); }
+function pLimit(n){ let running=0; const q=[]; const run=()=>{ if(!q.length||running>=n) return; const {fn,ok,fail}=q.shift(); running++; fn().then(ok,fail).finally(()=>{ running--; run(); }); }; return fn=>new Promise((res,rej)=>{ q.push({fn,ok:res,fail:rej}); run(); }); }
+const limit = pLimit(6);
+async function loadFromKeys(img, keys){ for(const key of keys){ try{ const url=await presign(key); img.src=url; img.dataset.loaded='1'; return; }catch(e){} } img.replaceWith(makeNoPreview()); }
 function thumbUrlForKey(key,w=512){ return `${API_BASE}/thumb?key=${encodeURIComponent(key)}&w=${w}&orient=1`; }
-function hydrateThumbs(){ const imgs=resultsEl.querySelectorAll('img[data-first]'); imgs.forEach(async img=>{ try{ const first=decodeURIComponent(img.dataset.first||''); const rest=JSON.parse(img.dataset.keys||'[]'); img.onerror = async ()=>{ img.onerror=null; try{ await loadFromKeys(img,[first,...rest]); }catch(e){} }; img.src = thumbUrlForKey(first); }catch(e){} }); }
-function uniqKey(r){ return primaryKey(r) || `${r.eventId||r.event||''}|${getId(r)}`; }
-function dedupe(list){ const map=new Map(); (list||[]).forEach(it=>{ const k=uniqKey(it); if(k && !map.has(k)) map.set(k,it); }); return Array.from(map.values()); }
-function renderResults(items){ const clean = dedupe(items||[]); state.all = clean; state.page = 1; emptyEl.style.display = clean.length ? 'none':'block'; renderPage(); }
-function renderPage(){ const upto = state.page * PAGE_SIZE; const slice = state.all.slice(0,upto); resultsEl.innerHTML = slice.map(cardHTML).join(''); hydrateThumbs(); if(btnMore){ if(state.all.length > slice.length){ pagerEl.style.display='block'; } else { pagerEl.style.display='none'; } } }
-btnMore && btnMore.addEventListener('click', ()=>{ state.page++; renderPage(); }); emptyEl.style.display='none'; resultsEl.innerHTML=items.map(cardHTML).join(''); hydrateThumbs(); }
+function makeNoPreview(){ const ph=document.createElement('div'); ph.className='thumb'; ph.style.display='flex'; ph.style.alignItems='center'; ph.style.justifyContent='center'; ph.style.color='#888'; ph.textContent='No preview'; return ph; }
+function hydrateThumbs(container){ const imgs=(container||resultsEl).querySelectorAll('img[data-first]'); imgs.forEach(img=>{ const first=decodeURIComponent(img.dataset.first||''); const rest=JSON.parse(img.dataset.keys||'[]'); img.onerror=()=>{ // fallback to presign download chain
+  limit(()=>loadFromKeys(img,[first,...rest])); }; img.src = thumbUrlForKey(first); }); }
 
-/* ====== TESTS ====== */
-function logTest(msg){ testsEl.textContent += msg + "\n"; } function resetTests(){ testsEl.textContent=''; }
-async function runTests(){ debugWrap.classList.add('active'); resetTests(); logTest('▶ Running frontend self-tests...'); try{ const obj=JSON.parseSafe('{"a":1}'); console.assert(obj.a===1,'JSON.parseSafe parse'); const bad=JSON.parseSafe('{bad'); console.assert(typeof bad==='object','JSON.parseSafe invalid'); logTest('✓ JSON.parseSafe ok'); }catch(e){ logTest('✗ JSON.parseSafe: '+e); }
-  try{ const r=await fetchSmart('https://example.invalid/abc',{method:'GET'},2000); console.assert(r.ok===false&&r.status===0,'fetchSmart network'); logTest('✓ fetchSmart network handled'); }catch(e){ logTest('✗ fetchSmart threw '+e); }
-  try{ const r2=await fetchSmart((API_BASE||'').replace(/\/$/,'')+'//__not_found__',{method:'GET'},5000); console.assert(r2.ok===false, 'non-OK handled'); logTest('✓ fetchSmart non-OK handled'); }catch(e){ logTest('✗ fetchSmart non-OK threw '+e); }
-  try{ const ks=buildKeyCandidates({id:'123',eventId:'ev1'}); console.assert(Array.isArray(ks)&&ks.length>=1,'key candidates'); logTest('✓ buildKeyCandidates ok'); }catch(e){ logTest('✗ buildKeyCandidates '+e); }
-  logTest('✅ Tests finished.'); }
+// ===== RENDER =====
+function cardHTML(r){
+  const pid=getId(r); const sim=getScore(r);
+  const keys=buildKeyCandidates(r); const first=keys[0]||''; const rest=JSON.stringify(keys.slice(1));
+  return `
+  <div class="cardR">
+    ${ first
+      ? `<img class=\"thumb\" loading=\"lazy\" alt=\"${pid||'photo'}\" data-first=\"${encodeURIComponent(first)}\" data-keys='${rest}'>`
+      : `<div class=\"thumb\" style=\"display:flex;align-items:center;justify-content:center;color:#888\">No preview</div>`}
+    <div class="meta">
+      ${pid?`<div><b>ID:</b> ${pid}</div>`:''}
+      ${sim?`<div><span class="pill">~${sim}%</span> match</div>`:''}
+      ${primaryKey(r)?`<div class="muted" style="word-break:break-all">${primaryKey(r)}</div>`:''}
+    </div>
+  </div>`;
+}
 
-/* ====== AUTOSTART ====== */
-(async function init(){ if(param('name')) nameEl.value=param('name'); if(param('mobile')) mobileEl.value=param('mobile'); if(param('event')) eventEl.value=param('event'); else if(DEFAULT_EVENT_ID) eventEl.value=DEFAULT_EVENT_ID; await startCamera(); window.addEventListener('focus',()=>{ if(!video.srcObject) startCamera().catch(()=>{}); }); if(DEBUG_MODE){ debugWrap.classList.add('active'); runTests(); } })();
+function renderNextPage(reset){
+  if(reset){ resultsEl.innerHTML=''; state.page=0; }
+  const start=state.page*PAGE_SIZE; const slice=state.allItems.slice(start, start+PAGE_SIZE);
+  if(!slice.length){ seeMoreBtn.style.display='none'; return; }
+  const html=slice.map(cardHTML).join('');
+  const frag=document.createElement('div'); frag.innerHTML=html; [...frag.children].forEach(n=>resultsEl.appendChild(n));
+  hydrateThumbs(resultsEl);
+  state.page++;
+  seeMoreBtn.style.display = (state.page*PAGE_SIZE < state.allItems.length)? 'inline-flex':'none';
+}
+
+// ===== INIT =====
+startCamera().catch(()=>{});
 </script>
 </body>
 </html>
