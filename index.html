@@ -1,261 +1,313 @@
 <!doctype html>
 <html lang="hi">
 <head>
-  <meta charset="utf-8">
-  <title>Face Search</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WedMatch – Face Search</title>
   <style>
-    :root{ --brand:#ff7a18; --brand-ink:#fff; --bg:#fff8f0; --card:#fff; --ink:#1f2328; --muted:#6b7280; --border:#e5e7eb; --shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px -16px rgba(0,0,0,.15); --ok:#0f9d58; --radius:14px }
-    *{box-sizing:border-box} html,body{height:100%} body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif}
-    header{position:sticky;top:0;z-index:10;background:linear-gradient(90deg,var(--brand),#ffa149);color:var(--brand-ink);padding:14px clamp(14px,3vw,24px);font-weight:800}
-    main{padding:clamp(12px,2.8vw,22px);max-width:1080px;margin:auto}
-    .layout{display:grid;gap:clamp(10px,2.2vw,16px);grid-template-columns:1.15fr .85fr} @media(max-width:980px){.layout{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-    .card .hd{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:700;display:flex;align-items:center;gap:8px}
-    .card .bd{padding:clamp(12px,2.4vw,18px)}
-    label{display:block;margin:12px 0 6px;font-weight:650}
-    input[type=text],input[type=tel],input[type=file]{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:transparent;color:inherit;font:inherit;outline:none}
-    .row{display:flex;gap:12px;flex-wrap:wrap} .row>div{flex:1 1 260px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--brand);color:var(--brand-ink);border:0;border-radius:12px;padding:13px 18px;font-weight:800;cursor:pointer;box-shadow:var(--shadow)}
-    .btn.gray{background:#5a5f69;color:#fff} .btn[disabled]{opacity:.6;cursor:not-allowed}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-    .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f3f3f3;border-radius:12px;border:1px solid var(--border)}
-    .meta{font-size:.92rem;color:#68707a;margin-top:8px}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#ffe4ce;color:#b35500;font-weight:700;font-size:.8rem}
-    .ok{color:var(--ok);font-weight:700}
-    .muted{color:var(--muted)} .msg{padding:12px;border:1px dashed var(--border);border-radius:12px;background:rgba(0,0,0,.02)}
-    #video{width:100%;aspect-ratio:4/3;background:#000;border-radius:14px} #canvas{width:100%;display:none;border-radius:14px}
-    #seeMore{margin-top:12px;width:100%}
+    :root{
+      --brand:#ff6d32;
+      --bg:#fafafa;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --ok:#10b981;
+      --bad:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111}
+    header{padding:10px 16px;background:#111;color:#fff;position:sticky;top:0;z-index:5}
+    header b{color:var(--brand)}
+    main{padding:16px;display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+    @media (max-width:980px){main{grid-template-columns:1fr}}
+
+    .card{background:var(--card);border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+    .card h3{margin:0;padding:14px 16px;border-bottom:1px solid #eee}
+    .card .content{padding:16px}
+
+    label{font-size:14px;color:#374151;display:block;margin:10px 0 6px}
+    input[type="text"]{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;font-size:15px}
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    button{appearance:none;border:none;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn{background:#111;color:#fff}
+    .btn.secondary{background:#f3f4f6;color:#111}
+    .btn.brand{background:var(--brand);color:#fff}
+
+    .kamera{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3}
+    video,canvas.kcap{width:100%;height:100%;object-fit:cover;display:block}
+    .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;background:#f3f4f6;color:#111}
+    .tag.ok{background:#ecfdf5;color:#065f46}
+    .tag.bad{background:#fef2f2;color:#991b1b}
+
+    /* results */
+    .resultsGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;padding:12px}
+    .photo{border:1px solid #eee;border-radius:12px;background:#fff;overflow:hidden}
+    .photo .thumb{width:100%;aspect-ratio:1/1.05;background:#f3f4f6;display:grid;place-items:center;overflow:hidden}
+    .photo img{width:100%;display:block}
+    .photo .meta{padding:10px 12px;border-top:1px solid #f3f4f6;color:#374151;font-size:13px}
+    .pill{padding:2px 8px;border-radius:999px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;margin-left:6px}
+
+    .muted{color:var(--muted)}
+    .hidden{display:none!important}
+    .hr{height:1px;background:#eee;margin:10px 0}
+    .center{display:grid;place-items:center}
   </style>
 </head>
 <body>
-  <header>Face Search</header>
+  <header>
+    <div><b>WedMatch</b> • Face Search</div>
+  </header>
   <main>
-    <div class="layout">
-      <section class="card">
-        <div class="hd">खोज</div>
-        <div class="bd">
-          <div class="row">
-            <div style="flex:1">
-              <label>नाम <span class="muted">(अनिवार्य)</span></label>
-              <input id="name" type="text" placeholder="आपका नाम" autocomplete="name" required>
-            </div>
-            <div style="flex:1">
-              <label>मोबाइल नंबर <span class="muted">(अनिवार्य)</span></label>
-              <input id="mobile" type="tel" placeholder="10 अंकों का नंबर" maxlength="10" inputmode="numeric" required>
-            </div>
+    <!-- LEFT: form -->
+    <section class="card" id="left">
+      <h3>खोज</h3>
+      <div class="content">
+        <div class="row">
+          <div>
+            <label>नाम (optional)</label>
+            <input id="inpName" type="text" placeholder="जैसे: मोहित" />
           </div>
-
-          <details id="adv" style="margin:6px 0 8px"><summary class="muted">Advanced (optional)</summary>
-            <label>Event IDs <span class="muted">(कॉमा से अलग; खाली छोड़ें—ऑटो)</span></label>
-            <input id="eventIds" type="text" placeholder="उदा: EVT_2025_08_12, demo-2025-01">
-          </details>
-
-          <label class="stat">सेल्फी कैमरा</label>
-          <video id="video" playsinline autoplay muted></video>
-          <canvas id="canvas"></canvas>
-
-          <div class="row" style="margin-top:10px">
-            <button id="btnSnap" class="btn">सेल्फ़ी लें</button>
-            <button id="btnRetake" class="btn gray" type="button">दोबारा लें</button>
+          <div>
+            <label>मोबाइल नंबर (optional)</label>
+            <input id="inpPhone" type="text" inputmode="numeric" placeholder="10 digits" />
           </div>
-
-          <div class="muted" id="selfieStatus" style="margin-top:8px">सेल्फ़ी तैयार करें या फ़ाइल चुनें।</div>
-
-          <label class="stat" style="margin-top:12px">या फ़ाइल चुनें</label>
-          <input id="fileInput" type="file" accept="image/*">
-
-          <div class="row" style="margin-top:12px">
-            <button id="btnSearch" class="btn" style="min-width:160px">Search</button>
-            <button id="btnRunTests" class="btn gray" type="button" title="Self-tests">Run Tests</button>
-          </div>
-
-          <div id="status" style="margin-top:10px"></div>
-          <details id="errBox" class="err"><summary>एरर डीटेल्स</summary><pre id="errText" style="white-space:pre-wrap"></pre></details>
         </div>
-      </section>
 
-      <section class="card">
-        <div class="hd">परिणाम</div>
-        <div class="bd">
-          <div id="found" class="ok" style="display:none"></div>
-          <div id="results" class="grid"></div>
-          <button id="seeMore" class="btn gray" style="display:none">और दिखाएँ</button>
-          <div id="empty" class="msg" style="display:none">कोई फोटो नहीं मिला।</div>
+        <details style="margin-top:8px">
+          <summary class="muted">Advanced</summary>
+          <label>Event IDs (comma separated, optional)</label>
+          <input id="inpEvents" type="text" placeholder="खाली छोड़ें तो ऑटो-पिक" />
+        </details>
+
+        <div style="margin-top:12px">
+          <label>सेल्फी कैमरा</label>
+          <div class="kamera card" id="camWrap">
+            <video id="video" playsinline autoplay muted></video>
+            <canvas id="snapCanvas" class="kcap hidden"></canvas>
+          </div>
+          <div class="actions">
+            <button class="btn brand" id="btnStartCam">कैमरा चालू</button>
+            <button class="btn" id="btnSnap" disabled>सेल्फी लें</button>
+            <button class="btn secondary" id="btnRetake" disabled>दोबारा लें</button>
+          </div>
         </div>
-      </section>
-    </div>
+
+        <div class="hr"></div>
+
+        <label>या फ़ाइल चुनें</label>
+        <input id="filePick" type="file" accept="image/*" />
+        <div class="actions">
+          <button class="btn" id="btnSearch">Search</button>
+          <span id="readyTag" class="tag hidden">सेल्फी तैयार ✓</span>
+        </div>
+
+        <details style="margin-top:12px">
+          <summary class="muted">Debug</summary>
+          <div id="dbg" class="muted" style="font-size:12px;white-space:pre-wrap"></div>
+        </details>
+      </div>
+    </section>
+
+    <!-- RIGHT: results -->
+    <section class="card" id="right">
+      <h3>परिणाम</h3>
+      <div id="resultsWrap">
+        <div class="center" style="padding:22px" id="emptyMsg">कोई खोज नहीं चली। पहले सेल्फी लें/अपलोड करें और Search दबाएँ।</div>
+        <div id="results" class="resultsGrid hidden"></div>
+        <div class="center" style="padding:12px">
+          <button id="btnMore" class="btn secondary hidden">और दिखाएँ</button>
+        </div>
+      </div>
+    </section>
   </main>
 
 <script>
-// ===== CONFIG =====
-const API_BASE = 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
-const DEFAULT_SIM = 70;
-const PAGE_SIZE  = 10;
+(() => {
+  // ==== CONFIG ====
+  // अपने API गेटवे का BASE URL यहाँ रखें (स्टेज सहित). अगर नहीं बदला तो पिछला काम करता रहेगा।
+  const API_BASE = (window.API_BASE) || 'https://oidwg6gcx0.execute-api.ap-south-1.amazonaws.com/PROD2';
+  const THUMB_PATH = '/thumb'; // GET /thumb?key=..&w=..&orient=1
+  const SEARCH_PATH = '/search';
 
-// ===== DOM =====
-const $ = s => document.querySelector(s);
-const nameEl=$('#name'), mobileEl=$('#mobile'), eventEl=$('#eventIds');
-const video=$('#video'), canvas=$('#canvas'), fileEl=$('#fileInput');
-const btnSnap=$('#btnSnap'), btnRetake=$('#btnRetake'), btnSearch=$('#btnSearch'), btnRunTests=$('#btnRunTests');
-const resultsEl=$('#results'), emptyEl=$('#empty'), foundEl=$('#found'), seeMoreBtn=$('#seeMore');
-const errBox=$('#errBox'), errText=$('#errText'), statusEl=$('#status');
+  // ==== DOM ====
+  const els = {
+    name: q('#inpName'), phone: q('#inpPhone'), events: q('#inpEvents'),
+    video: q('#video'), canvas: q('#snapCanvas'), startCam: q('#btnStartCam'),
+    snap: q('#btnSnap'), retake: q('#btnRetake'), file: q('#filePick'),
+    search: q('#btnSearch'), ready: q('#readyTag'),
+    resGrid: q('#results'), emptyMsg: q('#emptyMsg'), more: q('#btnMore'),
+    dbg: q('#dbg'),
+  };
 
-// ===== STATE =====
-const state={ stream:null, imageBase64:'', imgBytes:0, lastFileName:'', allItems:[], page:0 };
+  // state
+  const S = { stream: null, photoDataUrl: null, results: [], nextToken: null };
 
-// ===== HELPERS =====
-function stripDataUrl(u){ const i=u.indexOf(','); return i>-1?u.slice(i+1):u; }
-function validMobile(m){ return /^\d{10}$/.test((m||'').trim()); }
-function statusMsg(msg,type){ statusEl.innerHTML = type==='err'?`<div style="color:#b00020">${msg}</div>`:msg; }
-function parseEventInput(raw){ raw=(raw||'').trim(); if(!raw) return {}; const arr=raw.split(',').map(t=>t.trim()).filter(Boolean); return arr.length<=1? {eventId:arr[0]} : {eventIds:arr}; }
-function getId(r){ return r.photoId || r.id || r.imageId || r.photoID || ''; }
-function getScore(r){ const v=r.similarity ?? r.score ?? r.confidence ?? 0; return Math.round(v*100)/100; }
-function evFrom(r){ if(r.eventId) return r.eventId; if(r.s3Key && r.s3Key.startsWith('events/')) return r.s3Key.split('/')[1]; return ''; }
-function primaryKey(r){ return r.s3Key || r.key || r.s3key || r.path || r.urlKey || ''; }
+  // ==== Helpers ====
+  function q(s, r=document){ return r.querySelector(s); }
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function log(...a){ console.log(...a); els.dbg.textContent += a.map(x => typeof x==='string'?x:JSON.stringify(x)).join(' ')+'\n'; }
 
-// ===== CAMERA =====
-async function startCamera(){
-  try{
-    state.stream?.getTracks()?.forEach(t=>t.stop());
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
-    state.stream=stream; video.srcObject=stream; await video.play().catch(()=>{});
-  }catch{ statusMsg('कैमरा उपलब्ध नहीं। फ़ाइल से भी खोज हो जाएगी।'); }
-}
-function snapshot(){
-  const w=video.videoWidth||720,h=video.videoHeight||720;
-  canvas.width=w;canvas.height=h;
-  const ctx=canvas.getContext('2d');
-  ctx.drawImage(video,0,0,w,h);
-  const dataUrl=canvas.toDataURL('image/jpeg',.9);
-  state.imageBase64=stripDataUrl(dataUrl);
-  state.imgBytes=Math.round((state.imageBase64.length*3)/4);
-  canvas.style.display='block'; video.style.display='none';
-}
-async function useFile(file){
-  const dataUrl=await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); });
-  const img=new Image(); await new Promise((res,rej)=>{ img.onload=res; img.onerror=rej; img.src=dataUrl; });
-  const w=img.width||720,h=img.height||720; canvas.width=w;canvas.height=h;
-  const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
-  const jpeg=canvas.toDataURL('image/jpeg',.9);
-  state.imageBase64=stripDataUrl(jpeg); state.imgBytes=Math.round((state.imageBase64.length*3)/4);
-  canvas.style.display='block'; video.style.display='none';
-}
-
-// ===== EVENTS =====
-btnSnap.addEventListener('click', e=>{ e.preventDefault(); if(!video.srcObject) startCamera(); snapshot(); statusMsg(`सेल्फ़ी तैयार ✓ (${state.imgBytes} bytes)`); });
-btnRetake.addEventListener('click', e=>{ e.preventDefault(); canvas.style.display='none'; video.style.display='block'; state.imageBase64=''; statusMsg('सेल्फ़ी फिर से लें या फ़ाइल चुनें।'); });
-fileEl.addEventListener('change', e=>{ const f=e.target.files?.[0]; if(f) useFile(f); });
-btnSearch.addEventListener('click', e=>{ e.preventDefault(); doSearch(); });
-seeMoreBtn.addEventListener('click', e=>{ e.preventDefault(); renderNextPage(); });
-
-// ===== NET =====
-async function fetchJSON(url,opt={}){ const r=await fetch(url,opt); const ct=(r.headers.get('content-type')||'').toLowerCase(); const d=ct.includes('json')? await r.json(): await r.text(); if(!r.ok) throw new Error(typeof d==='string'?d:JSON.stringify(d)); return d; }
-
-// ===== SEARCH =====
-function dedupe(list){ const map=new Map(); for(const it of (list||[])){ const k=(primaryKey(it) || (evFrom(it)+'|'+getId(it))).toLowerCase(); if(k && !map.has(k)) map.set(k,it); } return [...map.values()]; }
-
-async function doSearch(){
-  errBox.open=false; errText.textContent='';
-  const nm=(nameEl.value||'').trim(); const mb=(mobileEl.value||'').trim(); if(!nm) return statusMsg('कृपया नाम भरें।','err'); if(!validMobile(mb)) return statusMsg('कृपया 10 अंकों का मोबाइल भरें।','err');
-  if(!state.imageBase64){ if(video.srcObject){ snapshot(); } }
-  if(!state.imageBase64) return statusMsg('कृपया सेल्फ़ी लें या फ़ाइल चुनें।','err');
-
-  btnSearch.disabled=true; statusMsg('खोज जारी है…');
-  const evObj=parseEventInput(eventEl.value);
-  const body={ ...evObj, imageBase64:state.imageBase64, name:nm, mobile:mb, sim:DEFAULT_SIM };
-  try{
-    const data=await fetchJSON(API_BASE+'/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const raw=data?.items || data?.results || data?.matches || [];
-    state.allItems = dedupe(raw); state.page=0;
-    foundEl.style.display='block'; foundEl.textContent=`मिले ${state.allItems.length} फोटो।`;
-    resultsEl.innerHTML=''; emptyEl.style.display= state.allItems.length? 'none':'block';
-    renderNextPage(true);
-    statusMsg('');
-  }catch(err){ statusMsg('सर्वर में दिक्कत: '+err.message,'err'); errText.textContent=err.stack||String(err); errBox.open=true; }
-  finally{ btnSearch.disabled=false; }
-}
-
-// ===== THUMB + DOWNLOAD FALLBACK =====
-async function presign(key){ const d=await fetchJSON(API_BASE+'/download?key='+encodeURIComponent(key)); if(d&&/^https?:\/\//i.test(d.url)) return d.url; throw new Error('presign failed'); }
-function buildKeyCandidates(r){ const pid=getId(r); const ev=evFrom(r); const keys=[]; const prim=primaryKey(r); if(prim) keys.push(prim); if(ev && pid){ ['','.jpg','.jpeg','.png','.webp','.JPG','.JPEG'].forEach(ext=>{ if(ext) keys.push(`events/${ev}/${pid}${ext}`); }); ['','.jpg','.jpeg','.png','.webp','.JPG','.JPEG'].forEach(ext=>{ if(ext) keys.push(`events/${ev}/originals/${pid}${ext}`); }); } return keys.filter(Boolean); }
-function pLimit(n){ let running=0; const q=[]; const run=()=>{ if(!q.length||running>=n) return; const {fn,ok,fail}=q.shift(); running++; fn().then(ok,fail).finally(()=>{ running--; run(); }); }; return fn=>new Promise((res,rej)=>{ q.push({fn,ok:res,fail:rej}); run(); }); }
-const limit = pLimit(6);
-async function loadFromKeys(img, keys){
-  // unique, defined only
-  const uniq=[...new Set((keys||[]).filter(Boolean))];
-  for(const key of uniq){
-    try{
-      const url=await presign(key);
-      // stop any further error recursion for this img
-      img.onerror=null;
-      img.src=url;
-      img.dataset.loaded='1';
-      return;
-    }catch(e){}
+  async function fetchJSON(url, opts={}){
+    const res = await fetch(url, Object.assign({ headers:{'Content-Type':'application/json'} }, opts));
+    if(!res.ok){
+      const txt = await res.text().catch(()=>'' );
+      throw new Error(`HTTP ${res.status}: ${txt}`);
+    }
+    return res.json();
   }
-  img.onerror=null;
-  img.replaceWith(makeNoPreview());
-}catch(e){} } img.replaceWith(makeNoPreview()); }
-function thumbUrlForKey(key,w=512){ return `${API_BASE}/thumb?key=${encodeURIComponent(key)}&w=${w}&orient=1`; }
-function makeNoPreview(){ const ph=document.createElement('div'); ph.className='thumb'; ph.style.display='flex'; ph.style.alignItems='center'; ph.style.justifyContent='center'; ph.style.color='#888'; ph.textContent='No preview'; return ph; }
-function hydrateThumbs(container){
-  const imgs=(container||resultsEl).querySelectorAll('img[data-first]');
-  imgs.forEach(img=>{
-    // prevent re-hydration + re-trying loop
-    if (img.dataset.hydrated) return;
-    img.dataset.hydrated='1';
 
-    const first=decodeURIComponent(img.dataset.first||'');
-    const rest=JSON.parse(img.dataset.keys||'[]');
-    let triedFallback=false;
+  function dataURLFromVideo() {
+    const v = els.video, c = els.canvas;
+    const w = v.videoWidth || 1280, h = v.videoHeight || 720;
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(v,0,0,w,h);
+    return c.toDataURL('image/jpeg', 0.9);
+  }
 
-    const giveUp=()=>{ img.onerror=null; img.replaceWith(makeNoPreview()); };
+  function showCanvasPreview(dUrl){
+    els.canvas.classList.remove('hidden');
+    els.video.classList.add('hidden');
+    // draw was already done; when using file we need to put image on canvas
+  }
 
-    // try /thumb once, if it errors, try presigned download only once
-    const onErr=()=>{
-      if (triedFallback){ giveUp(); return; }
-      triedFallback=true;
-      // if presigned also errors, giveUp handler will run
-      img.onerror=giveUp;
-      limit(()=>loadFromKeys(img,[first,...rest]));
+  async function startCamera(){
+    try{
+      if(S.stream){ return; }
+      const constraints = { video: { facingMode: { ideal: 'user' }, width: { ideal: 1280 }, height:{ ideal: 720 } }, audio:false };
+      const st = await navigator.mediaDevices.getUserMedia(constraints);
+      S.stream = st; els.video.srcObject = st;
+      els.snap.disabled = false; els.retake.disabled = true;
+      log('camera started');
+    }catch(err){
+      alert('Camera चालू नहीं हो सका: '+ err.message + '\nआप file upload से भी खोज चला सकते हैं।');
+      log('camera error', err);
+    }
+  }
+
+  function stopCamera(){
+    if(S.stream){ S.stream.getTracks().forEach(t=>t.stop()); S.stream=null; }
+  }
+
+  function setReady(on){ els.ready.classList.toggle('hidden', !on); }
+
+  // Build thumb URL from S3 key
+  function thumbURL(key){
+    const enc = encodeURIComponent(key);
+    return `${API_BASE}${THUMB_PATH}?key=${enc}&w=512&orient=1`;
+  }
+
+  function paintFileToCanvas(file){
+    return new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          els.canvas.width = img.width; els.canvas.height = img.height;
+          els.canvas.getContext('2d').drawImage(img,0,0);
+          els.canvas.classList.remove('hidden');
+          els.video.classList.add('hidden');
+          resolve();
+        };
+        img.onerror = reject;
+        img.src = r.result;
+      };
+      r.onerror = reject; r.readAsDataURL(file);
+    });
+  }
+
+  // ==== UI wiring ====
+  els.startCam.addEventListener('click', async () => { await startCamera(); });
+  els.snap.addEventListener('click', () => {
+    if(!S.stream){ return; }
+    S.photoDataUrl = dataURLFromVideo();
+    showCanvasPreview(S.photoDataUrl);
+    setReady(true); els.retake.disabled = false;
+  });
+
+  els.retake.addEventListener('click', () => {
+    if(S.stream){ els.video.classList.remove('hidden'); els.canvas.classList.add('hidden'); }
+    setReady(false); S.photoDataUrl = null; els.retake.disabled = true;
+  });
+
+  els.file.addEventListener('change', async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    await paintFileToCanvas(f);
+    S.photoDataUrl = els.canvas.toDataURL('image/jpeg',0.92);
+    setReady(true); els.retake.disabled = false;
+  });
+
+  els.search.addEventListener('click', async () => {
+    try{
+      els.search.disabled = true; els.more.classList.add('hidden');
+      await doSearch(true);
+    }catch(err){
+      alert('खोज में दिक्कत: '+err.message);
+      log('search error', err);
+    }finally{
+      els.search.disabled = false;
+    }
+  });
+
+  els.more.addEventListener('click', async () => {
+    try{ els.more.disabled = true; await doSearch(false); } finally { els.more.disabled=false; }
+  });
+
+  async function doSearch(reset){
+    if(!S.photoDataUrl){ alert('पहले सेल्फी लें या फ़ाइल चुनें'); return; }
+
+    if(reset){ S.results=[]; S.nextToken=null; renderResults(); }
+
+    const payload = {
+      name: els.name.value.trim() || undefined,
+      phone: els.phone.value.trim() || undefined,
+      eventIds: (els.events.value||'').split(',').map(s=>s.trim()).filter(Boolean),
+      photo: S.photoDataUrl, // data URL
+      limit: 10,
+      nextToken: S.nextToken || undefined,
     };
 
-    img.addEventListener('error', onErr, { once:true });
-    img.src = thumbUrlForKey(first);
-  });
-}
+    log('POST', SEARCH_PATH, payload);
+    const json = await fetchJSON(`${API_BASE}${SEARCH_PATH}`, { method:'POST', body: JSON.stringify(payload)});
 
-// ===== RENDER =====
-function cardHTML(r){
-  const pid=getId(r); const sim=getScore(r);
-  const keys=buildKeyCandidates(r); const first=keys[0]||''; const rest=JSON.stringify(keys.slice(1));
-  return `
-  <div class="cardR">
-    ${ first
-      ? `<img class=\"thumb\" loading=\"lazy\" alt=\"${pid||'photo'}\" data-first=\"${encodeURIComponent(first)}\" data-keys='${rest}'>`
-      : `<div class=\"thumb\" style=\"display:flex;align-items:center;justify-content:center;color:#888\">No preview</div>`}
-    <div class="meta">
-      ${pid?`<div><b>ID:</b> ${pid}</div>`:''}
-      ${sim?`<div><span class="pill">~${sim}%</span> match</div>`:''}
-      ${primaryKey(r)?`<div class="muted" style="word-break:break-all">${primaryKey(r)}</div>`:''}
-    </div>
-  </div>`;
-}
+    const { items = [], nextToken = null } = json;
+    S.results.push(...items); S.nextToken = nextToken;
+    renderResults();
 
-function renderNextPage(reset){
-  if(reset){ resultsEl.innerHTML=''; state.page=0; }
-  const start=state.page*PAGE_SIZE; const slice=state.allItems.slice(start, start+PAGE_SIZE);
-  if(!slice.length){ seeMoreBtn.style.display='none'; return; }
-  const html=slice.map(cardHTML).join('');
-  const frag=document.createElement('div'); frag.innerHTML=html; [...frag.children].forEach(n=>resultsEl.appendChild(n));
-  hydrateThumbs(resultsEl);
-  state.page++;
-  seeMoreBtn.style.display = (state.page*PAGE_SIZE < state.allItems.length)? 'inline-flex':'none';
-}
+    els.more.classList.toggle('hidden', !S.nextToken);
+  }
 
-// ===== INIT =====
-startCamera().catch(()=>{});
+  function renderResults(){
+    const wrap = els.resGrid; wrap.innerHTML='';
+    if(!S.results.length){ els.emptyMsg.classList.remove('hidden'); wrap.classList.add('hidden'); return; }
+    els.emptyMsg.classList.add('hidden'); wrap.classList.remove('hidden');
+
+    for(const it of S.results){
+      // it { key / photoId, eventId, score, etag }
+      const key = it.key || it.photoKey || it.photoId || it.id || '';
+      const score = it.score!=null ? Math.round(it.score*100) : (it.match||'~100%');
+      const idTxt = it.photoId || it.id || key.split('/').pop();
+
+      const div = document.createElement('div');
+      div.className='photo';
+      div.innerHTML = `
+        <div class="thumb"><img loading="lazy" referrerpolicy="no-referrer" src="${thumbURL(key)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'480\' height=\'480\'%3E%3Crect width=\'100%25\' height=\'100%25\' fill=\'%23f3f4f6\'/%3E%3C/svg%3E'" /></div>
+        <div class="meta">
+          <div class="muted">ID: <span title="${key}">${idTxt}</span> <span class="pill">~${score}% match</span></div>
+        </div>`;
+      wrap.appendChild(div);
+    }
+  }
+
+  // Auto start camera for https origins
+  if(location.protocol === 'https:' && navigator.mediaDevices){
+    // Small delay so autoplay policy settles
+    sleep(400).then(startCamera);
+  }
+})();
 </script>
 </body>
 </html>
